@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/signup/signup",
     "pages/signin/signin",
+    "pages/signup/signup",
     "pages/index/index"
   ],
   "subPackages": [],

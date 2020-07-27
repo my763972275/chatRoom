@@ -131,8 +131,7 @@ __webpack_require__.r(__webpack_exports__);
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; //
-//
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; //
 //
 //
 //
@@ -172,19 +171,22 @@ var _default =
   data: function data() {
     return {
       type: 'password',
-      isuser: false, // 用户名是否占用
+      isuser: false, // 用户名是否可用
       isemail: false, // 邮箱是否被占用
-      look: true, // 是否显示密码
+      look: false, // 是否显示密码
       invalid: false, // 邮箱是否符合
-      employ: false, // 是否被占用
+      useremploy: false, // 是否被占用
+      emailemploy: false, // 邮箱是否被占用
       lookurl: '../../static/images/unlook.png',
-      email: '' // 邮箱
-    };
+      email: '', // 邮箱
+      user: '', // 用户名
+      psw: '', // 密码			
+      isok: false };
+
   },
   methods: {
     //密码显示隐藏
     looks: function looks() {
-      console.log('1111');
       if (this.look) {
         this.type = 'password';
         this.lookurl = '../../static/images/unlook.png';
@@ -206,7 +208,32 @@ var _default =
           this.invalid = true;
         }
       }
+      this.isOk();
+    },
+    //获取用户名
+    getUser: function getUser(e) {
+      this.user = e.detail.value;
+      this.isOk();
+    },
+    getPsw: function getPsw(e) {
+      this.psw = e.detail.value;
+      this.isOk();
+    },
+    //判断是否可以注册了
+    isOk: function isOk() {
+      if (this.isuser && this.isemail && this.psw.length > 5) {
+        this.isok = true;
+      } else {
+        this.isok = false;
+      }
+    },
+    //返回登录页面
+    toSignIn: function toSignIn() {
+      uni.navigateBack({
+        delta: 1 // 返回一层
+      });
     } } };exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 
 /***/ }),
 

@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view class="top-bar-left">
+			<view class="top-bar-left" @tap="toSignIn">
 				<image src="../../static/images/back.png" class="back-img"></image>
 			</view>
 		</view>
@@ -12,25 +12,24 @@
 			<view class="title">注册</view>
 			<view class="inputs">
 				<view class="inputs-div">
-					<input type="text" placeholder="请输入用户名" class="user" placeholder-style="color:#aaa;font-weight:400;" />
-					<view class="employ" v-if="employ">已占用</view>
+					<input type="text" @input="getUser" placeholder="请输入用户名" class="user" placeholder-style="color:#aaa;font-weight:400;" />
+					<view class="employ" v-if="useremploy">已占用</view>
 					<image src="../../static/images/checked.png" class="ok" v-if="isuser"></image>
 				</view>
 				<view class="inputs-div">
-					<input type="text" @blur="isEmail($event)" placeholder="请输入邮箱" class="email" placeholder-style="color:#aaa;font-weight:400;" />
-					<view class="employ" v-if="employ">已占用</view>
+					<input type="text" @input="isEmail" placeholder="请输入邮箱" class="email" placeholder-style="color:#aaa;font-weight:400;" />
+					<view class="employ" v-if="emailemploy">已占用</view>
 					<view class="invalid" v-if="invalid">邮箱无效</view>
 					<image src="../../static/images/checked.png" class="ok"  v-if="isemail"></image>
 				</view>
 				<view class="inputs-div">
-					<input :type="type" placeholder="请输入密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
-					<view class="employ" v-if="employ">已占用</view>
+					<input :type="type" @input="getPsw" placeholder="请输入密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
 					<image :src="lookurl" class="look" @tap="looks()"></image>
 				</view>
 				
 			</view>
 		</view>
-		<view class="submit">登录</view>
+		<view :class="[{submit:isok},{submit1:!isok}]">注册</view>
 	</view>
 </template>
 
@@ -39,19 +38,22 @@ export default {
 	data() {
 		return {
 			type:'password',
-			isuser:false,  // 用户名是否占用
+			isuser:false,  // 用户名是否可用
 			isemail:false, // 邮箱是否被占用
-			look:true,    // 是否显示密码
+			look:false,     // 是否显示密码
 			invalid:false, // 邮箱是否符合
-			employ:false,  // 是否被占用
+			useremploy:false,  // 是否被占用
+			emailemploy:false, // 邮箱是否被占用
 			lookurl:'../../static/images/unlook.png',
 			email:'',      // 邮箱
+			user:'',       // 用户名
+			psw:'',        // 密码			
+			isok:false,
 		};
 	},
 	methods:{
 		//密码显示隐藏
 		looks:function(){
-			console.log('1111')
 			if(this.look){
 				this.type = 'password';
 				this.lookurl = '../../static/images/unlook.png'
@@ -73,6 +75,30 @@ export default {
 					this.invalid = true;
 				}
 			}
+			this.isOk();
+		},
+		//获取用户名
+		getUser:function(e){
+			this.user = e.detail.value
+			this.isOk();
+		},
+		getPsw:function(e){
+			this.psw = e.detail.value
+			this.isOk();
+		},
+		//判断是否可以注册了
+		isOk:function(){
+			if(this.isuser && this.isemail && this.psw.length>5){
+				this.isok = true;
+			}else{
+				this.isok = false;
+			}
+		},
+		//返回登录页面
+		toSignIn:function(){
+			uni.navigateBack({
+				delta:1 // 返回一层
+			})
 		}
 	}
 };
@@ -163,7 +189,6 @@ export default {
 		position:absolute;
 		right:10rpx;
 		top:76rpx;
-		background:red;
 	}
 }
 .submit {
@@ -176,6 +201,19 @@ export default {
 	font-weight: 500;
 	font-size: $uni-font-size-lg;
 	color: $uni-text-color;
+	line-height: 96rpx;
+	margin: 0 auto;
+}
+.submit1 {
+	width: 520rpx;
+	height: 96rpx;
+	background: rgba(39,40,50,0.2);
+	// box-shadow: 0rpx 50rpx 32rpx -36rpx rgba(255, 228, 49, 0.4);
+	border-radius: 48rpx;
+	text-align: center;
+	font-weight: 500;
+	font-size: $uni-font-size-lg;
+	color: #fff;
 	line-height: 96rpx;
 	margin: 0 auto;
 }

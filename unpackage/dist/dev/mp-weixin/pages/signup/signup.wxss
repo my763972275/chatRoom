@@ -109,7 +109,6 @@
     position: absolute;
     right: 10rpx;
     top: 76rpx;
-    background: red;
 }
 .submit {
   width: 520rpx;
@@ -121,6 +120,18 @@
   font-weight: 500;
   font-size: 32rpx;
   color: #333;
+  line-height: 96rpx;
+  margin: 0 auto;
+}
+.submit1 {
+  width: 520rpx;
+  height: 96rpx;
+  background: rgba(39, 40, 50, 0.2);
+  border-radius: 48rpx;
+  text-align: center;
+  font-weight: 500;
+  font-size: 32rpx;
+  color: #fff;
   line-height: 96rpx;
   margin: 0 auto;
 }

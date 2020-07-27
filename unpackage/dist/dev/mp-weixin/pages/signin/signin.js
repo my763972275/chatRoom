@@ -131,7 +131,7 @@ __webpack_require__.r(__webpack_exports__);
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; //
+/* WEBPACK VAR INJECTION */(function(uni) {Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; //
 //
 //
 //
@@ -153,8 +153,39 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
 var _default =
 {
   data: function data() {
-    return {};
-  } };exports.default = _default;
+    return {
+      user: '',
+      psw: '',
+      isshow: false };
+
+  },
+  methods: {
+    //登录
+    login: function login() {
+      if (this.user && this.psw) {
+        uni.request({
+          url: '',
+          data: {} });
+
+      } else {
+        this.isshow = true;
+      }
+    },
+    //跳转到注册见面
+    toSignUp: function toSignUp() {
+      uni.navigateTo({
+        url: '../signup/signup' });
+
+    },
+    //获取用户名/邮箱
+    getUser: function getUser(e) {
+      this.user = e.detail.value;
+    },
+    //获取密码
+    getPassword: function getPassword(e) {
+      this.psw = e.detail.value;
+    } } };exports.default = _default;
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
 
 /***/ }),
 

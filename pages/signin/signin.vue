@@ -1,6 +1,6 @@
 <template>
 	<view class="content">
-		<view class="top-bar">
+		<view class="top-bar" @tap="toSignUp">
 			<view class="top-bar-right"><view class="text">注册</view></view>
 		</view>
 		<view class="logo"><image src="../../static/images/logo.png" mode="widthFix"></image></view>
@@ -8,19 +8,50 @@
 			<view class="title">登录</view>
 			<view class="slogan">您好，欢迎来到yike!</view>
 			<view class="inputs">
-				<input type="text" placeholder="用户名/邮箱" class="user" placeholder-style="color:#aaa;font-weight:400;" />
-				<input type="password" placeholder="密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
+				<input type="text" @blur="getUser($event)" placeholder="用户名/邮箱" class="user" placeholder-style="color:#aaa;font-weight:400;" />
+				<input type="password" @blur="getPassword($event)" placeholder="密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
 			</view>
-			<view class="tips">输入用户名或密码错误！</view>
+			<view class="tips" v-if="isshow">输入用户名或密码错误！</view>
 		</view>
-		<view class="submit">登录</view>
+		<view class="submit" @tap="login">登录</view>
 	</view>
 </template>
 
 <script>
 export default {
 	data() {
-		return {};
+		return {
+			user: '',
+			psw: '',
+			isshow:false
+		};
+	},
+	methods: {
+		//登录
+		login: function() {
+			if (this.user && this.psw) {
+				uni.request({
+					url: '',
+					data: {}
+				});
+			}else{
+				this.isshow = true;
+			}
+		},
+		//跳转到注册见面
+		toSignUp: function() {
+			uni.navigateTo({
+				url: '../signup/signup'
+			});
+		},
+		//获取用户名/邮箱
+		getUser: function(e) {
+			this.user = e.detail.value;
+		},
+		//获取密码
+		getPassword: function(e) {
+			this.psw = e.detail.value;
+		}
 	}
 };
 </script>
@@ -83,8 +114,8 @@ export default {
 			border-bottom: 1rpx solid $uni-border-color;
 		}
 	}
-	.tips{
-		float:left;
+	.tips {
+		float: left;
 		font-size: $uni-font-size-lg;
 		color: $uni-color-warning;
 		line-height: 56rpx;
