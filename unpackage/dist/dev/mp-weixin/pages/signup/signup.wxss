@@ -41,134 +41,134 @@
 	border-bottom: 1rpx solid $uni-border-color; */
 }
 .top-bar .top-bar-left {
-    float: left;
-    padding-left: 16rpx;
+  float: left;
+  padding-left: 32rpx;
 }
 .top-bar .top-bar-left image {
-      margin-top: 10rpx;
-      width: 68rpx;
-      height: 68rpx;
-      border-radius: 16rpx;
+  margin-top: 10rpx;
+  width: 68rpx;
+  height: 68rpx;
+  border-radius: 16rpx;
 }
 .top-bar .top-bar-left .text {
-      font-size: 32rpx;
-      font-weight: 500;
-      color: #272832;
-      line-height: 88rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #272832;
+  line-height: 88rpx;
 }
 .top-bar .top-bar-left .back-img {
-      margin-top: 21rpx;
-      width: 26rpx;
-      height: 46rpx;
+  margin-top: 21rpx;
+  width: 26rpx;
+  height: 46rpx;
 }
 .top-bar .top-bar-center {
-    position: absolute;
-    text-align: center;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    margin: auto;
+  position: absolute;
+  text-align: center;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
 }
 .top-bar .top-bar-center .logo {
-      padding-top: 19rpx;
-      width: 88rpx;
-      height: 42rpx;
+  padding-top: 19rpx;
+  width: 88rpx;
+  height: 42rpx;
 }
 .top-bar .top-bar-right {
-    float: right;
-    padding-right: 14rpx;
+  float: right;
+  padding-right: 14rpx;
 }
 .top-bar .top-bar-right .search {
-      width: 88rpx;
-      height: 88rpx;
-      display: inline-block;
+  width: 88rpx;
+  height: 88rpx;
+  display: inline-block;
 }
 .top-bar .top-bar-right .add {
-      width: 88rpx;
-      height: 88rpx;
-      padding-right: 14rpx;
-      display: inline-block;
+  width: 88rpx;
+  height: 88rpx;
+  padding-right: 14rpx;
+  display: inline-block;
 }
 .top-bar .top-bar-right .text {
-      font-size: 32rpx;
-      font-weight: 500;
-      color: #272832;
-      line-height: 88rpx;
-      padding-right: 32rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #272832;
+  line-height: 88rpx;
+  padding-right: 32rpx;
 }
 .top-bar .top-bar-right image {
-      padding: 18rpx 0 0 18rpx;
-      width: 52rpx;
-      height: 52rpx;
+  padding: 18rpx 0 0 18rpx;
+  width: 52rpx;
+  height: 52rpx;
 }
 .top-bar .top-bar-right .more-img {
-      height: 88rpx;
-      padding-top: 10rpx;
-      padding-right: 16rpx;
+  height: 88rpx;
+  padding-top: 10rpx;
+  padding-right: 32rpx;
 }
 .top-bar .top-bar-right .more-img image {
-        width: 52rpx;
-        height: 12rpx;
+  width: 52rpx;
+  height: 12rpx;
 }
 .logo {
   text-align: center;
 }
 .logo image {
-    padding-top: 256rpx;
-    width: 194rpx;
-    height: 92rpx;
-    margin: 0 auto;
+  padding-top: 256rpx;
+  width: 194rpx;
+  height: 92rpx;
+  margin: 0 auto;
 }
 .content {
   padding-top: 25px;
 }
 .main {
-  padding: 54rpx 60rpx 120rpx;
+  padding: 54rpx 50rpx 120rpx;
 }
 .main .title {
-    font-size: 56rpx;
-    font-weight: 500;
-    color: #272832;
-    line-height: 80rpx;
+  font-size: 56rpx;
+  font-weight: 500;
+  color: #272832;
+  line-height: 80rpx;
 }
 .main .inputs {
-    padding-top: 48rpx;
+  padding-top: 48rpx;
 }
 .main .inputs input {
-      padding-top: 40rpx;
-      height: 88rpx;
-      font-size: 32rpx;
-      font-weight: 500;
-      color: #272832;
-      line-height: 88rpx;
-      border-bottom: 1rpx solid rgba(39, 40, 50, 0.1);
+  padding-top: 40rpx;
+  height: 88rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #272832;
+  line-height: 88rpx;
+  border-bottom: 1rpx solid rgba(39, 40, 50, 0.1);
 }
 .main .inputs-div {
-    position: relative;
+  position: relative;
 }
 .main .employ, .main .invalid {
-    position: absolute;
-    right: 0;
-    top: 40rpx;
-    font-size: 28rpx;
-    font-weight: 500;
-    color: #ff5d09;
-    line-height: 88rpx;
+  position: absolute;
+  right: 0;
+  top: 40rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #ff5d5b;
+  line-height: 88rpx;
 }
 .main .ok {
-    width: 38rpx;
-    height: 30rpx;
-    position: absolute;
-    right: 0;
-    top: 76rpx;
+  width: 38rpx;
+  height: 30rpx;
+  position: absolute;
+  right: 0;
+  top: 76rpx;
 }
 .main .look {
-    width: 40rpx;
-    height: 40rpx;
-    position: absolute;
-    right: 10rpx;
-    top: 76rpx;
+  width: 40rpx;
+  height: 40rpx;
+  position: absolute;
+  right: 10rpx;
+  top: 76rpx;
 }
 .submit {
   width: 520rpx;

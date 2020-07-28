@@ -17,7 +17,7 @@
 /* 行为相关颜色 */
 $uni-color-primary: rgba(255,228,49,1);
 $uni-color-success: rgba(87,153,255,1);
-$uni-color-warning: rgba(255,93,9,1);
+$uni-color-warning: rgba(255,93,91,1);
 $uni-color-error: rgba(255,93,91,1);
 
 /* 文字基本颜色 */
@@ -57,12 +57,12 @@ $uni-border-radius-circle: 50%;
 /* 水平间距 */
 $uni-spacing-row-sm: 20px;
 $uni-spacing-row-base: 40rpx;
-$uni-spacing-row-lg: 60rpx;
+$uni-spacing-row-lg: 50rpx;
 
 /* 垂直间距 */
-$uni-spacing-col-sm: 8rpx;
-$uni-spacing-col-base: 16rpx;
-$uni-spacing-col-lg: 24rpx;
+$uni-spacing-col-sm: 16rpx;
+$uni-spacing-col-base: 32rpx;
+$uni-spacing-col-lg: 48rpx;
 
 /* 透明度 */
 $uni-opacity-disabled: 0.3; // 组件禁用态的透明度
