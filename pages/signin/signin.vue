@@ -8,8 +8,8 @@
 			<view class="title">登录</view>
 			<view class="slogan">您好，欢迎来到yike!</view>
 			<view class="inputs">
-				<input type="text" @blur="getUser($event)" placeholder="用户名/邮箱" class="user" placeholder-style="color:#aaa;font-weight:400;" />
-				<input type="password" @blur="getPassword($event)" placeholder="密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
+				<input type="text" @input="getUser()" placeholder="用户名/邮箱" class="user" placeholder-style="color:#aaa;font-weight:400;" />
+				<input type="password" @input="getPassword()" placeholder="密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
 			</view>
 			<view class="tips" v-if="isshow">输入用户名或密码错误！</view>
 		</view>
@@ -41,7 +41,7 @@ export default {
 		//跳转到注册见面
 		toSignUp: function() {
 			uni.navigateTo({
-				url: '../signup/signup'
+				url: '../search/search'
 			});
 		},
 		//获取用户名/邮箱
@@ -57,38 +57,39 @@ export default {
 </script>
 
 <style lang="scss">
+	@import '../../commons/css/mycss.scss';
 .content {
 	padding-top: var(--status-bar-height);
 }
-.top-bar {
-	position: fixed;
-	z-index: 1001;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 88rpx;
-	padding-top: var(--status-bar-height);
-	background: $uni-bg-color;
-	.top-bar-right {
-		float: right;
-		padding-right: 32rpx;
-		.text {
-			font-size: $uni-font-size-lg;
-			font-weight: 500;
-			color: $uni-text-color;
-			line-height: 88rpx;
-		}
-	}
-}
-.logo {
-	text-align: center;
-	image {
-		padding-top: 256rpx;
-		width: 194rpx;
-		height: 92rpx;
-		margin: 0 auto;
-	}
-}
+// .top-bar {
+// 	position: fixed;
+// 	z-index: 1001;
+// 	top: 0;
+// 	left: 0;
+// 	width: 100%;
+// 	height: 88rpx;
+// 	padding-top: var(--status-bar-height);
+// 	background: $uni-bg-color;
+// 	.top-bar-right {
+// 		float: right;
+// 		padding-right: 32rpx;
+// 		.text {
+// 			font-size: $uni-font-size-lg;
+// 			font-weight: 500;
+// 			color: $uni-text-color;
+// 			line-height: 88rpx;
+// 		}
+// 	}
+// }
+// .logo {
+// 	text-align: center;
+// 	image {
+// 		padding-top: 256rpx;
+// 		width: 194rpx;
+// 		height: 92rpx;
+// 		margin: 0 auto;
+// 	}
+// }
 .main {
 	padding: 54rpx $uni-spacing-row-lg 120rpx;
 	.title {

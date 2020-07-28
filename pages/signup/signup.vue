@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view class="top-bar-left" @tap="toSignIn">
+			<view class="top-bar-left" @tap="backOne">
 				<image src="../../static/images/back.png" class="back-img"></image>
 			</view>
 		</view>
@@ -26,7 +26,6 @@
 					<input :type="type" @input="getPsw" placeholder="请输入密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
 					<image :src="lookurl" class="look" @tap="looks()"></image>
 				</view>
-				
 			</view>
 		</view>
 		<view :class="[{submit:isok},{submit1:!isok}]">注册</view>
@@ -95,7 +94,7 @@ export default {
 			}
 		},
 		//返回登录页面
-		toSignIn:function(){
+		backOne:function(){
 			uni.navigateBack({
 				delta:1 // 返回一层
 			})
@@ -105,45 +104,46 @@ export default {
 </script>
 
 <style lang="scss">
+	@import '../../commons/css/mycss.scss';
 .content {
 	padding-top: var(--status-bar-height);
 }
-.top-bar {
-	position: fixed;
-	z-index: 1001;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 88rpx;
-	padding-top: var(--status-bar-height);
-	background: $uni-bg-color;
-	.top-bar-left {
-		float: left;
-		padding-left: 32rpx;
-		width:88rpx;
-		height:88rpx;
-		.text {
-			font-size: $uni-font-size-lg;
-			font-weight: 500;
-			color: $uni-text-color;
-			line-height: 88rpx;
-		}
-		.back-img{
-			margin-top:21rpx;
-			width:26rpx;
-			height:46rpx;
-		}
-	}
-}
-.logo {
-	text-align: center;
-	image {
-		padding-top: 256rpx;
-		width: 194rpx;
-		height: 92rpx;
-		margin: 0 auto;
-	}
-}
+// .top-bar {
+// 	position: fixed;
+// 	z-index: 1001;
+// 	top: 0;
+// 	left: 0;
+// 	width: 100%;
+// 	height: 88rpx;
+// 	padding-top: var(--status-bar-height);
+// 	background: $uni-bg-color;
+// 	.top-bar-left {
+// 		float: left;
+// 		padding-left: 32rpx;
+// 		width:88rpx;
+// 		height:88rpx;
+// 		.text {
+// 			font-size: $uni-font-size-lg;
+// 			font-weight: 500;
+// 			color: $uni-text-color;
+// 			line-height: 88rpx;
+// 		}
+// 		.back-img{
+// 			margin-top:21rpx;
+// 			width:26rpx;
+// 			height:46rpx;
+// 		}
+// 	}
+// }
+// .logo {
+// 	text-align: center;
+// 	image {
+// 		padding-top: 256rpx;
+// 		width: 194rpx;
+// 		height: 92rpx;
+// 		margin: 0 auto;
+// 	}
+// }
 .main {
 	padding: 54rpx $uni-spacing-row-lg 120rpx;
 	.title {
