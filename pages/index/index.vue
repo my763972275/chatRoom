@@ -9,7 +9,7 @@
 			</view>
 			<view class="top-bar-right">
 				<view class="icon">
-					<image src="../../static/images/search.png" mode="widthFix"></image>
+					<image src="../../static/images/search.png" mode="widthFix" @tap="toSearch"></image>
 				</view>
 				<view class="icon">
 					<image src="../../static/images/add.png" mode="widthFix"></image>
@@ -54,7 +54,11 @@
 			},
 			getFriends:function(){
 				this.friends = datas.friends();
-				console.log(this.friends)
+			},
+			toSearch:function(){
+				uni.navigateTo({
+					url:'../search/search'
+				})
 			}
 		}
 	}

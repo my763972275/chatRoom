@@ -30,7 +30,7 @@
 		<view class="bottom-bar">
 			<view class="bottom-btn">加为好友</view>
 		</view>
-		<view class="add-misg">
+		<view class="add-misg" :style="{height:addHeight+'px'}">
 			<view class="name">{{user.name}}</view>
 			<textarea :value="myname+'请求加为好友~'" maxlength="120" class="add-main"/>
 		</view>
@@ -46,6 +46,7 @@
 		data() {
 			return {
 				sexBg:'rgba(255,93,91,1)',
+				addHeight:'', //页面高度
 				myname:'春雨',
 				user:{
 					name:'qiu',
@@ -54,11 +55,24 @@
 				}
 			};
 		},
+		onReady() {
+			this.getElementStyle();
+		},
 		methods:{
 			backOne:function(){
 				uni.navigateBack({
 					delta:1
 				})
+			},
+			// 获取背景高度
+			getElementStyle:function(){
+				//注：uni.createSelectorQuery() 需在生命周期mounted后进行调用
+				const query = uni.createSelectorQuery().in(this);
+				query.select('.bg').boundingClientRect(data => {
+					console.log('得到布局位置信息' + JSON.stringify(data));
+					console.log('节点离页面顶部的距离为' + data.top);
+					this.addHeight = data.height - 186 ;
+				}).exec();
 			}
 		}
 	}
@@ -164,7 +178,6 @@
 	width:100%;
 	box-sizing: border-box;
 	padding:0 56rpx;
-	height:1252rpx;
 	background:rgba(255,255,255,1);
 	border-radius:40rpx 40rpx 0rpx 0rpx;
 	.name{
@@ -175,12 +188,12 @@
 	}
 	.add-main{
 		padding:18rpx 22rpx;
-		// width:100%;
+		box-sizing: border-box;
+		width:100%;
 		height:420rpx;
-		background:rgba(243,244,246,1);
-		border-radius:20rpx;
+		background:$uni-bg-color-grey;
+		border-radius:$uni-border-radius-base;
 		font-size:$uni-font-size-lg;
-		font-weight:400;
 		color:$uni-text-color;
 		line-height: 44rpx;
 	}
@@ -189,7 +202,7 @@
 	position:fixed;
 	z-index:100;
 	bottom:0;
-	width:100%;
+	width:90%;
 	height:104rpx;
 	display:flex;
 	padding:12rpx $uni-spacing-col-base;
@@ -199,10 +212,10 @@
 		line-height:80rpx;
 		font-size: $uni-font-size-lg;
 		color:$uni-text-color;
-		width:684rpx;
 		height:80rpx;
 		background:$uni-bg-color-hover;
 		border-radius:$uni-border-radius-sm;
+		margin-right:$uni-spacing-col-base;
 	}
 	.send{
 		flex:auto;

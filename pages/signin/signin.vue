@@ -1,5 +1,8 @@
 <template>
 	<view class="content">
+		<view class="top-bar-left" @tap="backOne">
+			<image src="../../static/images/back.png"></image>
+		</view>
 		<view class="top-bar" @tap="toSignUp">
 			<view class="top-bar-right"><view class="text">注册</view></view>
 		</view>
@@ -38,10 +41,10 @@ export default {
 				this.isshow = true;
 			}
 		},
-		//跳转到注册见面
+		//跳转到注册界面
 		toSignUp: function() {
 			uni.navigateTo({
-				url: '../search/search'
+				url: '../signup/signup'
 			});
 		},
 		//获取用户名/邮箱
@@ -51,6 +54,11 @@ export default {
 		//获取密码
 		getPassword: function(e) {
 			this.psw = e.detail.value;
+		},
+		backOne:function(){
+			uni.navigateBack({
+				delta:1
+			})
 		}
 	}
 };
