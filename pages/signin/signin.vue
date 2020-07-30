@@ -69,35 +69,6 @@ export default {
 .content {
 	padding-top: var(--status-bar-height);
 }
-// .top-bar {
-// 	position: fixed;
-// 	z-index: 1001;
-// 	top: 0;
-// 	left: 0;
-// 	width: 100%;
-// 	height: 88rpx;
-// 	padding-top: var(--status-bar-height);
-// 	background: $uni-bg-color;
-// 	.top-bar-right {
-// 		float: right;
-// 		padding-right: 32rpx;
-// 		.text {
-// 			font-size: $uni-font-size-lg;
-// 			font-weight: 500;
-// 			color: $uni-text-color;
-// 			line-height: 88rpx;
-// 		}
-// 	}
-// }
-// .logo {
-// 	text-align: center;
-// 	image {
-// 		padding-top: 256rpx;
-// 		width: 194rpx;
-// 		height: 92rpx;
-// 		margin: 0 auto;
-// 	}
-// }
 .main {
 	padding: 54rpx $uni-spacing-row-lg 120rpx;
 	.title {
