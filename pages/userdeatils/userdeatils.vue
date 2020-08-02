@@ -16,7 +16,7 @@
 					</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
-				<view class="row">
+				<view class="row" @tap="modify">
 					<view class="title">签名</view>
 					<view class="cont">hahahhahahhahahhhahahhahaha</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
@@ -70,6 +70,17 @@
 			</view>
 			<view class="bt2">退出登录</view>
 		</view>
+		<view class="modify" :style="{bottom:modifyHeight + 'px'}" :animation="animationData">
+			<view class="modify-header">
+				<view class="close"  @tap="modify">取消</view>
+				<view class="title">签名</view>
+				<view class="define"  @tap="modifySubmit">确定</view>
+			</view>
+			<view class="modify-main">
+				<input type="text"  v-model="pwd" class="modify-pwd" placeholder="请输入原密码" placeholder-style="color:#aaa"/>
+				<textarea v-model="data" class="modify-content"/>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -81,12 +92,20 @@ export default {
 			format: true
 		});
 		return {
+			dataarr:{
+				
+			},
 			array: ['男', '女', '未知'],
 			index: 0,
 			date: currentDate,
 			tempFilePath: '',
 			headimg:'',
-			cropFilePath: '../../static/images/user1.jpg'
+			data:'heeelo',
+			pwd:'',
+			cropFilePath: '../../static/images/user1.jpg',
+			animationData:{},
+			isModify:false,
+			modifyHeight:''
 		};
 	},
 	computed: {
@@ -98,6 +117,9 @@ export default {
 		}
 	},
 	components: { ImageCropper },
+	onReady() {
+		this.getElementStyle();
+	},
 	methods: {
 		backOne: function() {
 			uni.navigateBack({
@@ -147,6 +169,30 @@ export default {
 		cancel() {
 			console.log('canceled');
 			this.tempFilePath="";
+		},
+		//获取页面高度
+		getElementStyle(){
+			const query = uni.createSelectorQuery().in(this);
+			query.select('.modify').boundingClientRect(data => {
+				this.modifyHeight = data.height;
+			}).exec()
+		},
+		//修改项弹框
+		modify(){
+			this.isModify = !this.isModify;
+			var animation = uni.createAnimation({
+				duration:300,
+				timingFunction:'ease'
+			})
+			if(this.isModify){
+				animation.bottom(0).step()
+			}else{
+				animation.bottom(-this.modifyHeight).step()
+			}
+			this.animationData = animation.export()
+		},
+		modifySubmit(){
+			this.modify()
 		}
 	}
 };
@@ -218,6 +264,72 @@ export default {
 		color: $uni-color-warning;
 		line-height: 88rpx;
 		text-align: center;
+	}
+}
+.modify{
+	position:fixed;
+	z-index:1002;
+	left:0;
+	height:100%;
+	width:100%;
+	background-color:white;
+	.modify-header{
+		width:100%;
+		height:88rpx;
+		padding-top:val(--status-bar-height);
+		display:flex;
+		flex-direction: row;
+		align-items: center;
+		border-bottom:1rpx solid $uni-border-color;
+		.close{
+			padding-left:$uni-spacing-col-base;
+			font-size:$uni-font-size-lg;
+			color:$uni-text-color;
+			line-height:44rpx;
+		}
+		.title{
+			flex:auto;
+			text-align: center;
+			font-size:40rpx;
+			color:$uni-text-color;
+			line-height:88rpx;
+		}
+		.define{
+			padding-right:$uni-spacing-col-base;
+			font-size:$uni-font-size-lg;
+			color:$uni-color-success;
+			line-height:44rpx;
+		}
+	}
+	.modify-main{
+		display:flex;
+		padding:$uni-spacing-col-base;
+		flex-direction: column;
+		.modify-pwd{
+			margin-bottom:$uni-spacing-col-base;
+			padding:0 20rpx;
+			box-sizing: border-box;
+			flex:auto;
+			width:100%;
+			height:88rpx;
+			background:$uni-bg-color-grey;
+			border-radius:20rpx;
+			font-size:$uni-font-size-lg;
+			color:$uni-text-color;
+			line-height:88rpx;
+		}
+		.modify-content{
+			padding:16rpx 20rpx;
+			box-sizing: border-box;
+			flex:auto;
+			width:100%;
+			height:386rpx;
+			background:$uni-bg-color-grey;
+			border-radius:20rpx;
+			font-size:$uni-font-size-lg;
+			color:$uni-text-color;
+			line-height:44rpx;
+		}
 	}
 }
 </style>

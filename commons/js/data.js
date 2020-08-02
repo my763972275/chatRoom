@@ -61,5 +61,131 @@ export default{
 			}
 		]
 		return isfriend;
+	},
+	//聊天消息
+	message:function(){
+		let msgs = [
+			{
+				id:'b',
+				imgurl:'user3.jpg',
+				message:{
+					name:'天安门城楼售票处',
+					address:'东长安街天安门城楼内',
+					latitude:'39.909473',
+					longitude:'116.397308999999'
+				},
+				types:3,
+				time:new Date(),
+				tip:12
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:{
+					name:'天安门城楼售票处',
+					address:'东长安街天安门城楼内',
+					latitude:'39.909473',
+					longitude:'116.397308999999'
+				},
+				types:3,
+				time:new Date(),
+				tip:13
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:{
+					voice:'a',
+					time:60
+				},
+				types:2,
+				time:new Date(),
+				tip:10
+			},
+			{
+				id:'b',
+				imgurl:'user3.jpg',
+				message:{
+					voice:'a',
+					time:20
+				},
+				types:2,
+				time:new Date(),
+				tip:11
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:'怀化公司对公i大广赛u购物i归队啊是对啊公对公五i去，改善帝国五i给',
+				types:0,
+				time:new Date()-1000,
+				tip:0
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:'怀化公司对公i大广赛u购物i归队啊是对啊公对公五i去，改善帝国五i给',
+				types:0,
+				time:new Date()-1000*16,
+				tip:1
+			},
+			{
+				id:'b',
+				imgurl:'user3.jpg',
+				message:'怀化公司对公i大广赛u购物i归队啊是对啊公对公五i去，改善帝国五i给',
+				types:0,
+				time:new Date()-1000*60,
+				tip:2
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:'怀化公司对',
+				types:0,
+				time:new Date()-1000*60*36,
+				tip:3
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:'user6.jpg',
+				types:1,
+				time:new Date()-1000*60*40,
+				tip:4
+			},
+			{
+				id:'b',
+				imgurl:'user3.jpg',
+				message:'怀化公司对公i大广赛u购物i归队啊是对啊公对公五i去，改善帝国五i给',
+				types:0,
+				time:new Date()-1000*60*57,
+				tip:5
+			},
+			{
+				id:'a',
+				imgurl:'user1.jpg',
+				message:'怀化公司对公i大广赛u购物i归队啊是对啊公对公五i去，改善帝国五i给',
+				types:0,
+				time:new Date()-1000*60*58,
+				tip:5
+			},
+			{
+				id:'b',
+				imgurl:'user3.jpg',
+				message:'怀化公司对公i大广赛u购物i归队啊是对啊公对公五i去，改善帝国五i给',
+				types:0,
+				time:new Date()-1000*60*60,
+				tip:7
+			},
+			{
+				id:'b',
+				imgurl:'user3.jpg',
+				message:'user10.jpg',
+				types:1,
+				time:new Date()-1000*60*60*24,
+				tip:8
+			},
+		]
+		return msgs;
 	}
 }

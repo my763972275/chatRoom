@@ -1,6 +1,26 @@
 {
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
+			"path": "pages/index/index",
+			"style": {
+				// "navigationBarTitleText": "uni-app"
+				"navigationStyle": "custom"
+			}
+		},
+		{
+		    "path" : "pages/chatroom/chatroom",
+		    "style" : {
+				"navigationStyle": "custom",
+				"enablePullDownRefresh":true
+			}
+		},
+		{
+		    "path" : "pages/friendrequest/friendrequest",
+		    "style" : {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 		    "path" : "pages/userdeatils/userdeatils",
 		    "style" : {
 				"navigationStyle": "custom"
@@ -31,13 +51,13 @@
 			}
 		},
 		{
-			"path": "pages/index/index",
-			"style": {
-				// "navigationBarTitleText": "uni-app"
-				"navigationStyle": "custom"
-			}
-		}
-		
+            "path" : "components/submit/submit",
+            "style" : {}
+        },
+		{
+            "path" : "components/emoji/emoji",
+            "style" : {}
+        }
     ],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",

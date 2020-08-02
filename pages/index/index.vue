@@ -1,9 +1,11 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view class="top-bar-left">
-				<image src="../../static/images/user3.jpg" mode="widthFix"></image>
-			</view>
+			<navigator url="../userhome/userhome?id=aaa" class="top-bar-left">
+			    <view class="top-bar-left">
+				    <image src="../../static/images/user3.jpg" mode="widthFix"></image>
+			     </view>
+			</navigator>
 			<view class="top-bar-center">
 				<image src="../../static/images/logo.png" mode="widthFix" class="logo"></image>
 			</view>
@@ -85,11 +87,11 @@
 		border-bottom:$uni-border-color;
 		.top-bar-left{
 			float:left;
-			padding-left:$uni-spacing-col-base;
+			padding-left:20rpx;
 			image{
 				margin-top:10rpx;
-				width:68rpx;
-				height:68rpx;
+				width:80rpx;
+				height:80rpx;
 				border-radius:16rpx;
 			}
 		}

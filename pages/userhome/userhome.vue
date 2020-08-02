@@ -11,13 +11,13 @@
 			</view>
 		</view>
 		<view class="bg">
-			<view class="bg-bai"></view>
+			<view class="bg-bai" :animation = "animationData4"></view>
 			<image src="../../static/images/user1.jpg" class="bg-img" mode="aspectFill"></image>
 		</view>
 		<view class="main">
 			<view class="user-header">
-				<view class="sex" :style="{background:sexBg}">
-					<image src="../../static/images/female.png" :animation="animationData3"></image>
+				<view class="sex" :style="{background:sexBg}" :animation="animationData3">
+					<image src="../../static/images/female.png"></image>
 				</view>
 				<image src="../../static/images/user1.jpg" mode="aspectFill" class="user-img" :animation="animationData2"></image>
 			</view>
@@ -28,15 +28,15 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn" @tap="addFriendAnimat">加为好友</view>
+			<view class="bottom-btn btn1" @tap="addFriendAnimat">加为好友</view>
 		</view>
 		<view class="add-misg" :style="{height:addHeight+'px',bottom:-+addHeight+'px'}" :animation = "animationData">
 			<view class="name">{{user.name}}</view>
 			<textarea :value="myname+'请求加为好友~'" maxlength="120" class="add-main"/>
 		</view>
-		<view class="add-bt" :animation = "animationData1">
-			<view class="close" @tap="addFriendAnimat">取消</view>
-			<view class="send">发送</view>
+		<view class="add-bt bottom-bar" :animation = "animationData1">
+			<view class="close btn1" @tap="addFriendAnimat">取消</view>
+			<view class="send btn1">发送</view>
 		</view>
 	</view>
 </template>
@@ -53,6 +53,7 @@
 				animationData1:{}, // 动画
 				animationData2:{}, // 动画
 				animationData3:{}, // 动画
+				animationData4:{}, // 动画
 				user:{
 					name:'qiu',
 					nick:'哈哈哈',
@@ -98,22 +99,29 @@
 					duration:300,
 					timingFunction:'ease'
 				})
+				var animation4 = uni.createAnimation({
+					duration:300,
+					timingFunction:'ease'
+				})
 				if(this.isAdd){
 					animation.bottom(0).step()
 					animation1.bottom(0).step()
-					animation2.width(120).height(120).top(40).left(90).step()
+					animation2.width(120).height(120).step()
 					animation3.opacity(0).step()
+					animation4.backgroundColor('rgba(255,228,49,0.6)').step()
 				}else{
 					animation.bottom(-this.addHeight).step()
 					animation1.bottom(-100).step()
-					animation2.width(200).height(200).top(0).left(0).step()
+					animation2.width().height().step()
 					animation3.opacity(1).step()
+					animation4.backgroundColor('rgba(255,228,49,0)').step()
 				}
 				
 				this.animationData = animation.export()
 				this.animationData1 = animation1.export()
 				this.animationData2 = animation2.export()
 				this.animationData3 = animation3.export()
+				this.animationData4 = animation4.export()
 			}
 		}
 	}
@@ -145,7 +153,8 @@
 	}
 }
 .main{
-	padding-top:148rpx;
+	text-align: center;
+	padding-top:240rpx;
 	.user-header{
 		position:relative;
 		margin: 0 auto;
@@ -199,21 +208,11 @@
 	}
 }
 .bottom-bar{
-	position:fixed;
-	bottom:0;
-	width:100%;
-	height:104rpx;
-	box-sizing: border-box;
-	padding:12rpx $uni-spacing-col-base;
 	.bottom-btn{
-		text-align:center;
-		line-height:80rpx;
-		font-size: $uni-font-size-lg;
-		color:$uni-text-color;
-		height:80rpx;
 		background:$uni-color-primary;
-		border-radius:$uni-border-radius-sm;
+		margin:0 $uni-spacing-col-base;
 	}
+	
 }
 .add-misg{
 	position: fixed;
@@ -242,33 +241,18 @@
 	}
 }
 .add-bt{
-	position:fixed;
 	z-index:100;
 	bottom:-114rpx;
-	width:90%;
-	height:104rpx;
 	display:flex;
-	padding:12rpx $uni-spacing-col-base;
 	.close{
 		width:172rpx;
-		text-align:center;
-		line-height:80rpx;
-		font-size: $uni-font-size-lg;
-		color:$uni-text-color;
-		height:80rpx;
 		background:$uni-bg-color-hover;
-		border-radius:$uni-border-radius-sm;
-		margin-right:$uni-spacing-col-base;
+		margin-left:$uni-spacing-col-base;
 	}
 	.send{
+		margin:0 $uni-spacing-col-base;
 		flex:auto;
-		text-align:center;
-		line-height:80rpx;
-		font-size: $uni-font-size-lg;
-		color:$uni-text-color;
-		height:80rpx;
 		background:$uni-color-primary;
-		border-radius:$uni-border-radius-sm;
 	}
 }
 </style>
