@@ -97,7 +97,10 @@
 				loading:'',
 				isloading:true,
 				animate:false,
-				beginloading:true
+				beginloading:true,
+				uid:'1',
+				type:1,
+				fid:'1'
 			};
 		},
 		onLoad() {
@@ -259,6 +262,16 @@
 				this.inputh = e;
 				this.goBottom();
 			},
+			//聊天数据发送后端
+			sendSocket(e){
+				if(this.type == 0){
+					//一对一聊天
+					this.socket.emit('msg',e,this.uid,this.fid)
+				}else{
+					//群发
+					this.socket.emit('groupmsg',e,this.uid,this.fid,)
+				}
+			}
 		}
 	}
 </script>

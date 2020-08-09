@@ -26,6 +26,7 @@ export default {
 		return {
 			user: '',
 			psw: '',
+			token:'',
 			isshow:false
 		};
 	},
@@ -35,7 +36,11 @@ export default {
 			if (this.user && this.psw) {
 				uni.request({
 					url: '',
-					data: {}
+					data: {},
+					method:'POST',
+					success:(data) => {
+						this.token = data.data.back.token;
+					}
 				});
 			}else{
 				this.isshow = true;
@@ -67,7 +72,16 @@ export default {
 <style lang="scss">
 	@import '../../commons/css/mycss.scss';
 .content {
-	padding-top: var(--status-bar-height);
+	padding-top:var(--status-bar-height);
+	.top-bar-left{
+		image{
+			margin-top:10rpx;
+			margin-left:30rpx;
+			width:60rpx;
+			height:60rpx;
+			border-radius:16rpx;
+		}
+	}
 }
 .main {
 	padding: 54rpx $uni-spacing-row-lg 120rpx;

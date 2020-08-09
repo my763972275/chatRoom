@@ -2,7 +2,7 @@
 	<view class="content">
 		<view class="top-bar">
 			<view class="top-bar-left" @tap="backOne">
-				<image src="../../static/images/back.png" class="back-img"></image>
+				<image src="../../static/images/back.png"></image>
 			</view>
 		</view>
 		<view class="logo">
@@ -107,43 +107,15 @@ export default {
 	@import '../../commons/css/mycss.scss';
 .content {
 	padding-top: var(--status-bar-height);
+	.top-bar-left{
+		image{
+			margin-top:10rpx;
+			width:60rpx;
+			height:60rpx;
+			border-radius:16rpx;
+		}
+	}
 }
-// .top-bar {
-// 	position: fixed;
-// 	z-index: 1001;
-// 	top: 0;
-// 	left: 0;
-// 	width: 100%;
-// 	height: 88rpx;
-// 	padding-top: var(--status-bar-height);
-// 	background: $uni-bg-color;
-// 	.top-bar-left {
-// 		float: left;
-// 		padding-left: 32rpx;
-// 		width:88rpx;
-// 		height:88rpx;
-// 		.text {
-// 			font-size: $uni-font-size-lg;
-// 			font-weight: 500;
-// 			color: $uni-text-color;
-// 			line-height: 88rpx;
-// 		}
-// 		.back-img{
-// 			margin-top:21rpx;
-// 			width:26rpx;
-// 			height:46rpx;
-// 		}
-// 	}
-// }
-// .logo {
-// 	text-align: center;
-// 	image {
-// 		padding-top: 256rpx;
-// 		width: 194rpx;
-// 		height: 92rpx;
-// 		margin: 0 auto;
-// 	}
-// }
 .main {
 	padding: 54rpx $uni-spacing-row-lg 120rpx;
 	.title {

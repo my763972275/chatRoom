@@ -44,11 +44,14 @@
 	export default {
 		data() {
 			return {
-				friends:[]
+				friends:[],
+				uid:'1'
 			}
 		},
 		onLoad() {
             this.getFriends();
+			this.join(this.uid);
+			this.sockettest();
 		},
 		methods: {
 			changeTime:function(date){
@@ -61,12 +64,24 @@
 				uni.navigateTo({
 					url:'../search/search'
 				})
+			},
+			//socket 模块
+			//用户登录socket注册
+			join:function(uid){
+				this.socket.emit('login',uid);
+			},
+			//服务器消息接收测试
+			sockettest:function(){
+				this.socket.on('msg',id =>{
+					console.log('后端发送的消息为：' + id)
+				})
 			}
 		}
 	}
 </script>
 
 <style lang="scss">
+	// @import  '../../commons/css/mycss.scss';
 	.content {
 		display: flex;
 		flex-direction: column;
@@ -90,8 +105,8 @@
 			padding-left:20rpx;
 			image{
 				margin-top:10rpx;
-				width:80rpx;
-				height:80rpx;
+				width:60rpx;
+				height:60rpx;
 				border-radius:16rpx;
 			}
 		}
