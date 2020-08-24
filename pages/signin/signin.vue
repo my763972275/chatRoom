@@ -1,8 +1,5 @@
 <template>
 	<view class="content">
-		<view class="top-bar-left" @tap="backOne">
-			<image src="../../static/images/back.png"></image>
-		</view>
 		<view class="top-bar" @tap="toSignUp">
 			<view class="top-bar-right"><view class="text">注册</view></view>
 		</view>
@@ -11,10 +8,10 @@
 			<view class="title">登录</view>
 			<view class="slogan">您好，欢迎来到yike!</view>
 			<view class="inputs">
-				<input type="text" @input="getUser()" placeholder="用户名/邮箱" class="user" placeholder-style="color:#aaa;font-weight:400;" />
-				<input type="password" @input="getPassword()" placeholder="密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" />
+				<input type="text"  placeholder="用户名/邮箱" class="user" placeholder-style="color:#aaa;font-weight:400;" v-model="user"/>
+				<input type="password"  placeholder="密码" class="psw" placeholder-style="color:#aaa;font-weight:400;" v-model="psw"/>
 			</view>
-			<view class="tips" v-if="isshow">输入用户名或密码错误！</view>
+			<view class="tips" :style="{display:mon}">输入用户名或密码错误！</view>
 		</view>
 		<view class="submit" @tap="login">登录</view>
 	</view>
@@ -27,23 +24,65 @@ export default {
 			user: '',
 			psw: '',
 			token:'',
-			isshow:false
+			mon:'none'
 		};
+	},
+	onLoad(e) {
+		if(e.user){
+			this.user = e.user;
+			uni.showToast({
+				title:'注册成功请登录',
+				icon:'none',
+				duration:2000
+			})
+		}else if(e.name){
+			this.user = e.name;
+			uni.showToast({
+				title:'token过期，请重新登录',
+				icon:'none',
+				duration:2000
+			})
+		}
 	},
 	methods: {
 		//登录
 		login: function() {
 			if (this.user && this.psw) {
 				uni.request({
-					url: '',
-					data: {},
+					url: this.serverUrl + '/signin/match',
+					data: {
+						data:this.user,
+						pwd:this.psw
+					},
 					method:'POST',
 					success:(data) => {
-						this.token = data.data.back.token;
+						let status = data.data.status;
+						if(status == 200){
+							this.mon = 'none';
+							// 登录成功
+							let res = data.data.back;
+							console.log(res)
+							// 本地存储用户信息
+							try{
+								uni.setStorageSync('user',{'token':res.token,'id':res.id,'name':res.name,'imgurl':res.imgurl})
+							}catch(e){
+								console.log('数据库存储错误')
+							}
+							uni.navigateTo({
+								url:'../index/index'
+							})
+						}else if(status == 500){
+							uni.showToast({
+								title:'服务器出错！',
+								icon:'none',
+								duration:2000
+							})
+						}else{
+							this.mon = 'block';
+							this.psw = ''
+						}
 					}
 				});
-			}else{
-				this.isshow = true;
 			}
 		},
 		//跳转到注册界面
@@ -51,14 +90,6 @@ export default {
 			uni.navigateTo({
 				url: '../signup/signup'
 			});
-		},
-		//获取用户名/邮箱
-		getUser: function(e) {
-			this.user = e.detail.value;
-		},
-		//获取密码
-		getPassword: function(e) {
-			this.psw = e.detail.value;
 		},
 		backOne:function(){
 			uni.navigateBack({
@@ -73,15 +104,6 @@ export default {
 	@import '../../commons/css/mycss.scss';
 .content {
 	padding-top:var(--status-bar-height);
-	.top-bar-left{
-		image{
-			margin-top:10rpx;
-			margin-left:30rpx;
-			width:60rpx;
-			height:60rpx;
-			border-radius:16rpx;
-		}
-	}
 }
 .main {
 	padding: 54rpx $uni-spacing-row-lg 120rpx;

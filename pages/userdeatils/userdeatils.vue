@@ -92,9 +92,7 @@ export default {
 			format: true
 		});
 		return {
-			dataarr:{
-				
-			},
+			dataarr:{},
 			array: ['男', '女', '未知'],
 			index: 0,
 			date: currentDate,
@@ -167,7 +165,6 @@ export default {
 		},
 		//取消函数
 		cancel() {
-			console.log('canceled');
 			this.tempFilePath="";
 		},
 		//获取页面高度
@@ -179,6 +176,13 @@ export default {
 		},
 		//修改项弹框
 		modify(){
+			// if(ispwd){
+			// 	this.ispwd = 'block'
+			// }else{
+			// 	this.ispwd = 'none'
+			// }
+			// this.modifyTitle = type;
+			// this.data = data;
 			this.isModify = !this.isModify;
 			var animation = uni.createAnimation({
 				duration:300,

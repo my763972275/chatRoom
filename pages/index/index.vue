@@ -1,9 +1,9 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<navigator url="../userhome/userhome?id=aaa" class="top-bar-left">
+			<navigator :url="'../userhome/userhome?id='+uid" class="top-bar-left">
 			    <view class="top-bar-left">
-				    <image src="../../static/images/user3.jpg" mode="widthFix"></image>
+				    <image :src="imgurl" mode="widthFix"></image>
 			     </view>
 			</navigator>
 			<view class="top-bar-center">
@@ -45,11 +45,14 @@
 		data() {
 			return {
 				friends:[],
-				uid:'1'
+				uid:'',
+				imgurl:'',
+				token:'',
 			}
 		},
 		onLoad() {
             this.getFriends();
+			this.getStorages();
 			this.join(this.uid);
 			this.sockettest();
 		},
@@ -57,9 +60,27 @@
 			changeTime:function(date){
 				return myfun.dateTime(date)
 			},
+			// 获取缓存数据
+			getStorages(){
+				try{
+					const value = uni.getStorageSync('user');
+					if(value){
+						this.uid = value.id;
+						this.imgurl = this.serverUrl + value.imgurl;
+						this.token =value.token;
+					}else{
+						uni.navigateTo({
+							url:'../signin/signin'
+						})
+					}
+				}catch(e){
+					
+				}
+			},
 			getFriends:function(){
 				this.friends = datas.friends();
 			},
+			// 跳转到搜索页面
 			toSearch:function(){
 				uni.navigateTo({
 					url:'../search/search'

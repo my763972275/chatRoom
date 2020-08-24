@@ -54,12 +54,12 @@
 }
 .top-bar .top-bar-left {
   float: left;
-  padding-left: 32rpx;
+  padding-left: 20rpx;
 }
 .top-bar .top-bar-left image {
   margin-top: 10rpx;
-  width: 68rpx;
-  height: 68rpx;
+  width: 60rpx;
+  height: 60rpx;
   border-radius: 16rpx;
 }
 .top-bar .top-bar-center {
