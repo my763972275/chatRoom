@@ -98,10 +98,13 @@ export default{
 		}
 	},
 	//详细时间
-	detailTime1(e){
+	detailTime(e){
 		let old = new Date(e);
+		let d = old.getTime();
+		let h = old.getHours();
+		let m = old.getMinutes();
 		let Y = old.getFullYear();
-		let M = old.getMonth();
+		let M = old.getMonth()+1;
 		let D = old.getDate();
 		if(M<10){
 			M = '0'+M
@@ -109,7 +112,27 @@ export default{
 		if(D<10){
 			D = '0' +D
 		}
-		return Y+'-'+M+'-'+D
+		if(h<10){
+			h = '0' +h
+		}
+		if(m<10){
+			m = '0' +m
+		}
+		return Y+'-'+M+'-'+D+' '+h+':'+m;
+	},
+	//详细时间
+	detailTime1(e){
+		let old = new Date(e);
+		let Y = old.getFullYear();
+		let M = old.getMonth()+1;
+		let D = old.getDate();
+		if(M<10){
+			M = '0'+M
+		}
+		if(D<10){
+			D = '0' +D
+		}
+		return Y+'-'+M+'-'+D;
 	},
 	//间隔时间差
 	spaceTime(old,now){

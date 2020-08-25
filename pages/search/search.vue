@@ -73,13 +73,6 @@ export default {
 		},
 		//修改项弹框
 		modify(){
-			// if(ispwd){
-			// 	this.ispwd = 'block'
-			// }else{
-			// 	this.ispwd = 'none'
-			// }
-			// this.modifyTitle = type;
-			// this.data = data;
 			this.isModify = !this.isModify;
 			var animation = uni.createAnimation({
 				duration:300,
@@ -166,14 +159,13 @@ export default {
 				method:'POST',
 				success: (data) => {
 					let status = data.data.status;
-					console.log(status)
 					if(status == 200){
 						let arr = data.data.result;
-						// let exp = eval('/' + e + '/g');
+						let exp = eval('/' + e + '/g');
 						for (let i = 0; i < arr.length; i++) {
-							if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
+							// if (arr[i].name.search(e) != -1 || arr[i].email.search(e) != -1) {
 								this.isFriend(arr[i],e);
-							}
+							// }
 						}
 					}else if(status == 300){
 						// token过期跳回到登录页面
@@ -212,7 +204,6 @@ export default {
 					method:'POST',
 					success: (data) => {
 						let status = data.data.status;
-						console.log(status)
 						if(status == 200){
 							let arr = data.data.result;
 							// 是好友

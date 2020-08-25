@@ -35,6 +35,13 @@ export default {
 				icon:'none',
 				duration:2000
 			})
+		}else if(e.cgpwd){
+			this.user = e.cgpwd;
+			uni.showToast({
+				title:'密码已修改，请重新登录',
+				icon:'none',
+				duration:2000
+			})
 		}else if(e.name){
 			this.user = e.name;
 			uni.showToast({

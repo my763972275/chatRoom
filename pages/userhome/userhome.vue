@@ -5,7 +5,7 @@
 				<image src="../../static/images/back.png" mode=""></image>
 			</view>
 			<view class="top-bar-right">
-				<view class="more-img" v-if="relation == 0 || relation == 1">
+				<view class="more-img" v-if="relation == 0 || relation == 1" @tap="userDetail">
 					<image src="../../static/images/more.png" mode=""></image>
 				</view>
 			</view>
@@ -28,7 +28,7 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn btn1" @tap="addFriendAnimat" v-if="relation == 2">加为好友</view>
+			<view class="bottom-btn btn1" @tap="addFriendBtn" v-if="relation == 2">加为好友</view>
 			<view class="bottom-btn btn1"  v-if="relation == 1">发送消息</view>
 		</view>
 		<!--  -->
@@ -38,7 +38,7 @@
 		</view>
 		<view class="add-bt bottom-bar" :animation = "animationData1">
 			<view class="close btn1" @tap="addFriendAnimat">取消</view>
-			<view class="send btn1">发送</view>
+			<view class="send btn1" @tap="addSubmit">发送</view>
 		</view>
 	</view>
 </template>
@@ -48,7 +48,7 @@
 		data() {
 			return {
 				sexBg:'rgba(87,153,255,1)',
-				addHeight:'', //页面高度
+				addHeight:'1000', //页面高度
 				id:'',        //用户对象
 				uid:'',       //用户id
 				token:'',
@@ -92,11 +92,6 @@
 				}catch(e){
 					
 				}
-			},
-			backOne:function(){
-				uni.navigateBack({
-					delta:1
-				})
 			},
 			// 获取背景高度
 			getElementStyle:function(){
@@ -149,15 +144,20 @@
 				this.animationData3 = animation3.export()
 				this.animationData4 = animation4.export()
 			},
+			// 添加好友按钮
+			addFriendBtn(){
+				this.msg = this.myname + '请求添加好友~'
+				this.addFriendAnimat()
+			},
 			// 确定添加好友
 			addSubmit(){
 				if(this.msg.length > 0){
-					this.modify();
+					this.addFriendAnimat();
 					uni.request({
 					   url:this.serverUrl + '/friend/applyfriend',
 					   data:{
 						   uid:this.uid,
-						   fid:this.fid,
+						   fid:this.id,
 						   token:this.token,
 						   msg:this.msg
 					   },
@@ -301,9 +301,13 @@
 						let status = data.data.status;
 						if(status == 200){
 							let res = data.data.result
-							if(!typeof(res.markname)){
+							if(res.markname != undefined){
 								this.markname = res.markname;
 							}
+						}else if(status == 300){
+							uni.navigateTo({
+								url:'../signin/signin?name='+this.myname
+							})
 						}else{
 							uni.showToast({
 								title:'服务器出错了！',
@@ -313,7 +317,19 @@
 						}
 					}
 				})
-			}
+			},
+			// 跳到用户详情页
+			userDetail(){
+				uni.navigateTo({
+					url:'../userdeatils/userdeatils?id='+this.id
+				})
+			},
+			// 返回上一页
+			backOne:function(){
+				uni.navigateBack({
+					delta:1
+				})
+			},
 		}
 	}
 </script>

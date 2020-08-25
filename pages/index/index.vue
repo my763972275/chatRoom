@@ -19,7 +19,21 @@
 			</view>
 		</view>
 		<view class="main">
-			<view class="friends">
+			<view class="friends" @tap="goRequest" v-if="requestData > 0">
+				<!--   -->
+				<view class="friend-list">
+					<view class="friend-list-l">
+						<text class="tip">{{requestData}}</text>
+						<image src="../../static/images/apply.png" style="width:50px;height:50px;"></image>
+					</view>
+					<view class="friend-list-r">
+						<view class="top">
+							<view class="name">好友申请</view>
+							<view class="time">{{changeTime(requestTime)}}</view>
+						</view>
+						<view class="info">茫茫人海，相遇便是缘分</view>
+					</view>
+				</view>
 				<view class="friend-list" v-for="(item,index) in friends" :key="item.id">
 					<view class="friend-list-l">
 						<text class="tip">{{item.tip}}</text>
@@ -48,11 +62,15 @@
 				uid:'',
 				imgurl:'',
 				token:'',
+				myname:'',
+				requestData:0,         //申请数
+				requestTime:''         //最后申请时间
 			}
 		},
 		onLoad() {
-            this.getFriends();
 			this.getStorages();
+            this.getFriends();
+			this.friendRequest();
 			this.join(this.uid);
 			this.sockettest();
 		},
@@ -68,6 +86,7 @@
 						this.uid = value.id;
 						this.imgurl = this.serverUrl + value.imgurl;
 						this.token =value.token;
+						this.myname = value.name
 					}else{
 						uni.navigateTo({
 							url:'../signin/signin'
@@ -77,8 +96,77 @@
 					
 				}
 			},
+			// 获取好友列表
 			getFriends:function(){
 				this.friends = datas.friends();
+				// uni.request({
+				// 	url:this.serverUrl + '/index/getfriend',
+				// 	data:{
+				// 		uid:this.uid,
+				// 		state:0,
+				// 		token:this.token
+				// 	},
+				// 	method:'POST',
+				// 	success: (data) => {
+				// 		let status = data.data.result;
+				// 		if(status == 200){
+				// 			let res = data.data.result;
+				// 		}else if(status == 300){
+				// 			uni.navigateTo({
+				// 				url:'../signin/signin?name='+this.myname
+				// 			})
+				// 		}else{
+				// 			uni.showToast({
+				// 				title:'服务器出错了！',
+				// 				iconn:'none',
+				// 				duration:2000
+				// 			})
+				// 		}
+				// 	}
+				// })
+			},
+			// 好友申请
+			friendRequest(){
+				uni.request({
+					url:this.serverUrl + '/index/getfriend',
+					data:{
+						uid:this.uid,
+						state:2,
+						token:this.token
+					},
+					method:'POST',
+					success:(data) => {
+						let status = data.data.status;
+						if(status == 200){
+							let res = data.data.result;
+							this.requestData = res.length
+							if(res.length>0){
+								this.requestTime = res[0].lastTime
+								for(let i = 0; i<res.length; i++){
+									if(this.requestTime<res[i].lastTime){
+										this.requestTime = res[i].lastTime
+									}
+								}
+							}
+						}else if(status == 500){
+							uni.showToast({
+								title:'服务器出错了！',
+								icon:'none',
+								duration:2000
+							})
+						}else if(status == 300){
+							uni.navigateTo({
+								url:'../signin/signin?name='+this.myname
+							})
+						}
+					}
+				})
+				
+			},
+			goRequest(){
+				uni.navigateTo({
+					url:'../friendrequest/friendrequest'
+				})
 			},
 			// 跳转到搜索页面
 			toSearch:function(){
@@ -126,8 +214,8 @@
 			padding-left:20rpx;
 			image{
 				margin-top:10rpx;
-				width:60rpx;
-				height:60rpx;
+				width:80rpx;
+				height:80rpx;
 				border-radius:16rpx;
 			}
 		}

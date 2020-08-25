@@ -9,76 +9,97 @@
 			<view class="column heads">
 				<view class="row head">
 					<view class="title">头像</view>
-					<view class="user-head">
+					<view class="user-head" v-if="id == uid">
 						<image-cropper :src="tempFilePath" @confirm="confirm" @cancel="cancel"></image-cropper>
 						<image :src="cropFilePath" @tap="upload" class="user-img"></image>
-						<!-- <image :src="imgUrl" class="user-img"></image> -->
 					</view>
+					<view class="more" v-if="id == uid"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
+					<image :src="cropFilePath" class="user-img" v-if="id != uid"></image>
+				</view>
+
+				<view class="row" @tap="modify('签名', 'explain', dataarr.explain, false)" v-if="id == uid">
+					<view class="title">签名</view>
+					<view class="cont">{{ dataarr.explain }}</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
-				<view class="row" @tap="modify">
+				<view class="row" v-if="id != uid">
 					<view class="title">签名</view>
-					<view class="cont">hahahhahahhahahhhahahhahaha</view>
-					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
+					<view class="cont">{{ dataarr.explain }}</view>
 				</view>
 				<view class="row">
-					<view class="title">注册</view>
-					<view class="cont">2020-04-20 23:23:32</view>
+					<view class="title">注册时间</view>
+					<view class="cont">{{ changeTime(dataarr.time) }}</view>
 				</view>
 			</view>
 			<view class="column">
-				<view class="row">
+				<view class="row" @tap="modify('昵称', 'name', dataarr.name, false)" v-if="id == uid">
 					<view class="title">昵称</view>
-					<view class="cont">栾树懊悔废弃</view>
+					<view class="cont">{{ dataarr.name }}</view>
+					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
+				</view>
+				<view class="row" @tap="modify('昵称', 'markname', dataarr.name, false)" v-if="id != uid">
+					<view class="title">昵称</view>
+					<view class="cont">{{ markname }}</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
 				<view class="row">
 					<view class="title">性别</view>
 					<view class="cont">
-						<picker :range="array" @change="bindPickerChange" :value="index">
+						<picker :range="array" @change="bindPickerChange" :value="index" v-if="id == uid">
 							<view class="uni-input">{{ array[index] }}</view>
 						</picker>
+						<view class="uni-input" v-if="id != uid">{{ array[index] }}</view>
 					</view>
-					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
+					<view class="more" v-if="id == uid"><image src="../../static/images/detail.png" mode="aspectFit" v-if="id == uid"></image></view>
 				</view>
-				<view class="row">
+				<view class="row" v-if="id == uid">
 					<view class="title">生日</view>
 					<view class="cont">
-						<picker :start="startDate" :end="endDate" @change="bindDateChange" :value="date" mode="date">
+						<picker :start="startDate" :end="endDate" @change="bindDateChange" :value="date" mode="date" v-if="id == uid">
 							<view class="uni-input">{{ date }}</view>
 						</picker>
+						<view class="uni-input" v-if="id != uid">{{ date }}</view>
 					</view>
-					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
+					<view class="more" v-if="id == uid"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
-				<view class="row">
+				<view class="row" @tap="modify('电话', 'phone', dataarr.phone, false)" v-if="id == uid">
 					<view class="title">电话</view>
-					<view class="cont">15850645842</view>
+					<view class="cont">{{ dataarr.phone }}</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
-				<view class="row">
+				<view class="row" v-if="id != uid">
+					<view class="title">电话</view>
+					<view class="cont">{{ dataarr.phone }}</view>
+				</view>
+				<view class="row" @tap="modify('邮箱', 'email', dataarr.email, false)" v-if="id == uid">
 					<view class="title">邮箱</view>
-					<view class="cont">763972275@qq.com</view>
+					<view class="cont">{{ dataarr.email }}</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
+				<view class="row" v-if="id != uid">
+					<view class="title">邮箱</view>
+					<view class="cont">{{ dataarr.email }}</view>
+				</view>
 			</view>
-			<view class="column">
-				<view class="row">
+			<view class="column" v-if="id == uid">
+				<view class="row" @tap="modify('密码', 'psw', '', true)">
 					<view class="title">密码</view>
-					<view class="cont">***********</view>
+					<view class="cont">******</view>
 					<view class="more"><image src="../../static/images/detail.png" mode="aspectFit"></image></view>
 				</view>
 			</view>
-			<view class="bt2">退出登录</view>
+			<view class="bt2" v-if="id == uid" @tap="quit">退出登录</view>
+			<view class="bt2" v-if="id != uid" @tap="deleteFriend">删除好友</view>
 		</view>
-		<view class="modify" :style="{bottom:modifyHeight + 'px'}" :animation="animationData">
+		<view class="modify" :style="{ bottom: -modifyHeight + 'px' }" :animation="animationData">
 			<view class="modify-header">
-				<view class="close"  @tap="modify">取消</view>
-				<view class="title">签名</view>
-				<view class="define"  @tap="modifySubmit">确定</view>
+				<view class="close" @tap="modify('', '', '', false)">取消</view>
+				<view class="title">{{ modifyTitle }}</view>
+				<view class="define" @tap="modifySubmit">确定</view>
 			</view>
 			<view class="modify-main">
-				<input type="text"  v-model="pwd" class="modify-pwd" placeholder="请输入原密码" placeholder-style="color:#aaa"/>
-				<textarea v-model="data" class="modify-content"/>
+				<input type="text" v-model="pwd" class="modify-pwd" placeholder="请输入原密码" placeholder-style="color:#aaa" :style="{ display: ispwd }" />
+				<textarea v-model="data" class="modify-content" />
 			</view>
 		</view>
 	</view>
@@ -86,24 +107,34 @@
 
 <script>
 import ImageCropper from '@/components/ling-imgcropper/ling-imgcropper.vue';
+import myfun from '../../commons/js/myfun.js';
 export default {
 	data() {
 		const currentDate = this.getDate({
 			format: true
 		});
 		return {
-			dataarr:{},
-			array: ['男', '女', '未知'],
-			index: 0,
-			date: currentDate,
+			id: '',
+			uid: '',
+			token: '',
+			myname: '',
+			markname: '',
+			dataarr: {}, //表单数组
+			array: ['男', '女'],
+			index: 0, //性别数组下标
+			date: currentDate, //生日日期
 			tempFilePath: '',
-			headimg:'',
-			data:'heeelo',
-			pwd:'',
+			headimg: '',
+			data: '修改的内容',
+			oldData: '',
+			modifyTitle: '',
+			ispwd: 'none', //是否显示密码项
+			pwd: undefined,
+			type: '', //修改项
 			cropFilePath: '../../static/images/user1.jpg',
-			animationData:{},
-			isModify:false,
-			modifyHeight:''
+			animationData: {},
+			isModify: false,
+			modifyHeight: '1000'
 		};
 	},
 	computed: {
@@ -118,19 +149,139 @@ export default {
 	onReady() {
 		this.getElementStyle();
 	},
+	onLoad(e) {
+		this.id = e.id;
+		this.getStorages();
+		this.getUser();
+		this.getMarkName();
+	},
 	methods: {
-		backOne: function() {
-			uni.navigateBack({
-				delta: 1
+		// 获取缓存数据
+		getStorages() {
+			try {
+				const value = uni.getStorageSync('user');
+				if (value) {
+					this.uid = value.id;
+					this.token = value.token;
+					this.myname = value.name;
+				} else {
+					uni.navigateTo({
+						url: '../signin/signin'
+					});
+				}
+			} catch (e) {}
+		},
+		// 获取用户信息
+		getUser() {
+			uni.request({
+				url: this.serverUrl + '/user/detail',
+				data: {
+					id: this.id,
+					token: this.token
+				},
+				method: 'POST',
+				success: data => {
+					let status = data.data.status;
+					if (status == 200) {
+						let res = data.data.result;
+						// 处理头像链接
+						this.cropFilePath = this.serverUrl + res.imgurl;
+						// 处理简介
+						if (res.explain == undefined) {
+							res.explain = '这个人很懒，什么都没有留下~';
+						}
+						// 处理生日
+						if (res.birth == undefined) {
+							this.date = '0000-00-00';
+						} else {
+							this.date = myfun.detailTime1(res.birth);
+						}
+						// 处理电话
+						if (res.phone == undefined) {
+							res.phone = '未知';
+						}
+						if (this.markname.length == 0) {
+							this.markname = res.name;
+						}
+						this.sexJudge(res.sex);
+						this.dataarr = res;
+					} else if (status == 300) {
+						// token过期跳回到登录页面
+						uni.navigateTo({
+							url: '../signin/signin?name=' + this.myname
+						});
+					} else if (status == 500) {
+						uni.showToast({
+							title: '服务器出错了！',
+							icon: 'none',
+							duration: 2000
+						});
+					}
+				}
 			});
+		},
+		// 性别判断
+		sexJudge(e) {
+			if (e == 'female') {
+				this.index = 1;
+			} else {
+				this.index = 0;
+			}
+		},
+		// 获取好友昵称
+		getMarkName() {
+			if (this.id != this.uid) {
+				uni.request({
+					url: this.serverUrl + '/user/getmarkname',
+					data: {
+						uid: this.uid,
+						fid: this.id,
+						token: this.token
+					},
+					method: 'POST',
+					success: data => {
+						let status = data.data.status;
+						if (status == 200) {
+							let res = data.data.result;
+							if (res.markname != undefined) {
+								this.markname = res.markname;
+							}
+						} else {
+							uni.showToast({
+								title: '服务器出错了！',
+								icon: 'none',
+								duration: 2000
+							});
+						}
+					}
+				});
+			}
+		},
+		// 时间处理
+		changeTime(date) {
+			return myfun.detailTime(date);
 		},
 		//性别选择器
 		bindPickerChange: function(e) {
+			let oldIndex = this.index;
 			this.index = e.target.value;
+			if (this.index != oldIndex) {
+				var sex = '';
+				if (this.index == 0) {
+					sex = 'male';
+				} else {
+					sex = 'female';
+				}
+				this.update(sex, 'sex', undefined);
+			}
 		},
 		//日期选择器
 		bindDateChange: function(e) {
+			let oldDate = this.date;
 			this.date = e.target.value;
+			if (this.date != oldDate) {
+				this.update(this.date, 'birth', undefined);
+			}
 		},
 		//获取日期
 		getDate(type) {
@@ -152,7 +303,7 @@ export default {
 			uni.chooseImage({
 				count: 1, //
 				sizeType: ['original', 'compressed'],
-				sourceType: ['album','camera'],
+				sourceType: ['album', 'camera'],
 				success: res => {
 					this.tempFilePath = res.tempFilePaths.shift();
 				}
@@ -162,41 +313,233 @@ export default {
 		confirm(e) {
 			this.tempFilePath = '';
 			this.cropFilePath = e.detail.tempFilePath;
+			this.headimg = e.detail.tempFilePath;
+			uni.uploadFile({
+				url: this.serverUrl + '/files/upload',
+				filePath: this.headimg,
+				name: 'file',
+				fileType: 'images',
+				formData: {
+					url: 'images',
+					name: this.uid,
+					token: this.token
+				},
+				success: uploadFileRes => {
+					var backstr = uploadFileRes.data;
+					// 本地存储用户信息修改
+					try {
+						uni.setStorageSync('user', { id: this.uid, name: this.myname, imgurl: backstr, token: this.token });
+					} catch (e) {
+						console.log('数据库存储出错！');
+					}
+					// 修改头像保存到数据库
+					this.update(backstr, 'imgurl', undefined);
+				},
+				complete() {},
+				fail(e) {
+					console.log('this is errormsg:' + e.message);
+				}
+			});
+		},
+		// 修改数据
+		update(e, t, p) {
+			uni.request({
+				url: this.serverUrl + '/user/update',
+				data: {
+					id: this.uid,
+					data: e,
+					type: t,
+					token: this.token,
+					pwd: p
+				},
+				method: 'POST',
+				success: data => {
+					let status = data.data.status;
+					if (status == 200) {
+						this.dataarr[type] = e;
+						if (type == 'psw') {
+							uni.removeStorage({
+								key: 'user'
+							});
+							// 用户需要重新登录
+							uni.navigateTo({
+								url: '../signin/signin?cgpwd=' + this.myname
+							});
+						}
+					} else if (status == 300) {
+						uni.navigateTo({
+							url: '../signin/signin?name=' + this.myname
+						});
+					} else if (status == 400) {
+						uni.showToast({
+							title: '原始密码输入错误！',
+							icon: 'none',
+							duration: 2000
+						});
+					} else if (status == 201) {
+						uni.showToast({
+							title: '已占用！',
+							icon: 'none',
+							duration: 2000
+						});
+					} else if (status == 500) {
+						uni.showToast({
+							title: '服务器出错了！',
+							icon: 'none',
+							duration: 2000
+						});
+					}
+				}
+			});
+		},
+		// 退出登录
+		quit() {
+			uni.removeStorage({
+				key: 'user'
+			});
+			// 用户需要重新登录
+			uni.navigateTo({
+				url: '../signin/signin'
+			});
 		},
 		//取消函数
 		cancel() {
-			this.tempFilePath="";
+			this.tempFilePath = '';
+		},
+		backOne: function() {
+			uni.navigateBack({
+				delta: 1
+			});
 		},
 		//获取页面高度
-		getElementStyle(){
+		getElementStyle() {
 			const query = uni.createSelectorQuery().in(this);
-			query.select('.modify').boundingClientRect(data => {
-				this.modifyHeight = data.height;
-			}).exec()
+			query
+				.select('.modify')
+				.boundingClientRect(data => {
+					this.modifyHeight = data.height;
+				})
+				.exec();
 		},
 		//修改项弹框
-		modify(){
-			// if(ispwd){
-			// 	this.ispwd = 'block'
-			// }else{
-			// 	this.ispwd = 'none'
-			// }
-			// this.modifyTitle = type;
-			// this.data = data;
+		modify(title, type, data, ispwd) {
+			if (ispwd) {
+				this.ispwd = 'block';
+				this.pwd = '';
+			} else {
+				this.ispwd = 'none';
+				this.pwd = undefined;
+			}
+			this.type = type;
+			this.modifyTitle = title;
+			this.oldData = data;
+			this.data = data;
 			this.isModify = !this.isModify;
 			var animation = uni.createAnimation({
-				duration:300,
-				timingFunction:'ease'
-			})
-			if(this.isModify){
-				animation.bottom(0).step()
-			}else{
-				animation.bottom(-this.modifyHeight).step()
+				duration: 300,
+				timingFunction: 'ease'
+			});
+			if (this.isModify) {
+				animation.bottom(0).step();
+			} else {
+				animation.bottom(-this.modifyHeight).step();
 			}
-			this.animationData = animation.export()
+			this.animationData = animation.export();
 		},
-		modifySubmit(){
-			this.modify()
+		modifySubmit() {
+			if (this.data.length > 0 && this.oldData != this.data) {
+				if (this.type == 'markname') {
+					this.updateFriendName();
+					this.markname = this.data;
+				} else if (this.type == 'email') {
+					let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+					if (reg.test(this.data)) {
+						this.update(this.data, this.type, this.pwd);
+					} else {
+						uni.showToast({
+							title: '邮箱格式错误！',
+							icon: 'none',
+							duration: 2000
+						});
+					}
+				} else {
+					this.update(this.data, this.type, this.pwd);
+					// this.dataarr[this.type] = this.data;
+				}
+				// this.getUser()
+			}
+			thia.modify();
+		},
+		// 好友昵称修改
+		updateFriendName() {
+			if (this.data.length > 0 && this.data != this.oldData) {
+				uni.request({
+					url: this.serverUrl + '/user/updatemarkname',
+					data: {
+						token: this.token,
+						uid: this.uid,
+						fid: this.id,
+						name: this.data
+					},
+					method: 'POST',
+					success: data => {
+						let status = data.data.status;
+						if (status == 200) {
+						} else if (status == 300) {
+							uni.navigateTo({
+								url: '../signin/signin?name=' + this.myname
+							});
+						} else if (status == 500) {
+							uni.showToast({
+								title: '服务器出错了！',
+								icon: 'none',
+								duration: 2000
+							});
+						}
+					}
+				});
+			}
+		},
+		// 删除好友
+		deleteFriend(){
+			uni.showModal({
+				title:'提示',
+				content:'确定删除该好友吗？',
+				success: (res) => {
+					if(res.confirm){
+						uni.request({
+							url:this.serverUrl + '/friend/deletefriend',
+							data:{
+								uid:this.uid,
+								fid:this.id,
+								token:this.token
+							},
+							method:'POST',
+							success: (data) => {
+								let status = data.data.result;
+								if(status == 200){
+									uni.navigateTo({
+										url:'../index/index'
+									})
+								}else if(status == 500){
+									uni.showToast({
+										title:'服务器出错了！',
+										icon:'none',
+										duration:2000
+									})
+								}else if(status == 300){
+									uni.navigateTo({
+										url:'../signin/signin?name='+this.myname
+									})
+								}
+							}
+						})
+					}else if(res.cancel){
+						
+					}
+				}
+			})
+			
 		}
 	}
 };
@@ -270,69 +613,69 @@ export default {
 		text-align: center;
 	}
 }
-.modify{
-	position:fixed;
-	z-index:1002;
-	left:0;
-	height:100%;
-	width:100%;
-	background-color:white;
-	.modify-header{
-		width:100%;
-		height:88rpx;
-		padding-top:val(--status-bar-height);
-		display:flex;
+.modify {
+	position: fixed;
+	z-index: 1002;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background-color: white;
+	.modify-header {
+		width: 100%;
+		height: 88rpx;
+		padding-top: val(--status-bar-height);
+		display: flex;
 		flex-direction: row;
 		align-items: center;
-		border-bottom:1rpx solid $uni-border-color;
-		.close{
-			padding-left:$uni-spacing-col-base;
-			font-size:$uni-font-size-lg;
-			color:$uni-text-color;
-			line-height:44rpx;
+		border-bottom: 1rpx solid $uni-border-color;
+		.close {
+			padding-left: $uni-spacing-col-base;
+			font-size: $uni-font-size-lg;
+			color: $uni-text-color;
+			line-height: 44rpx;
 		}
-		.title{
-			flex:auto;
+		.title {
+			flex: auto;
 			text-align: center;
-			font-size:40rpx;
-			color:$uni-text-color;
-			line-height:88rpx;
+			font-size: 40rpx;
+			color: $uni-text-color;
+			line-height: 88rpx;
 		}
-		.define{
-			padding-right:$uni-spacing-col-base;
-			font-size:$uni-font-size-lg;
-			color:$uni-color-success;
-			line-height:44rpx;
+		.define {
+			padding-right: $uni-spacing-col-base;
+			font-size: $uni-font-size-lg;
+			color: $uni-color-success;
+			line-height: 44rpx;
 		}
 	}
-	.modify-main{
-		display:flex;
-		padding:$uni-spacing-col-base;
+	.modify-main {
+		display: flex;
+		padding: $uni-spacing-col-base;
 		flex-direction: column;
-		.modify-pwd{
-			margin-bottom:$uni-spacing-col-base;
-			padding:0 20rpx;
+		.modify-pwd {
+			margin-bottom: $uni-spacing-col-base;
+			padding: 0 20rpx;
 			box-sizing: border-box;
-			flex:auto;
-			width:100%;
-			height:88rpx;
-			background:$uni-bg-color-grey;
-			border-radius:20rpx;
-			font-size:$uni-font-size-lg;
-			color:$uni-text-color;
-			line-height:88rpx;
+			flex: auto;
+			width: 100%;
+			height: 88rpx;
+			background: $uni-bg-color-grey;
+			border-radius: 20rpx;
+			font-size: $uni-font-size-lg;
+			color: $uni-text-color;
+			line-height: 88rpx;
 		}
-		.modify-content{
-			padding:16rpx 20rpx;
+		.modify-content {
+			padding: 16rpx 20rpx;
 			box-sizing: border-box;
-			flex:auto;
-			width:100%;
-			height:386rpx;
-			background:$uni-bg-color-grey;
-			border-radius:20rpx;
-			font-size:$uni-font-size-lg;
-			color:$uni-text-color;
-			line-height:44rpx;
+			flex: auto;
+			width: 100%;
+			height: 386rpx;
+			background: $uni-bg-color-grey;
+			border-radius: 20rpx;
+			font-size: $uni-font-size-lg;
+			color: $uni-text-color;
+			line-height: 44rpx;
 		}
 	}
 }
