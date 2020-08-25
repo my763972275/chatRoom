@@ -301,9 +301,10 @@
 						let status = data.data.status;
 						if(status == 200){
 							let res = data.data.result
-							if(res.markname != undefined){
-								this.markname = res.markname;
-							}
+							// console.log(res)
+							// if(res.markname != undefined){
+							// 	this.markname = res.markname;
+							// }
 						}else if(status == 300){
 							uni.navigateTo({
 								url:'../signin/signin?name='+this.myname

@@ -160,5 +160,33 @@ export default{
 				fn.apply(this,args);
 			},delay)
 		}
+	},
+	// 排序
+	sort:function(arr,obj,tip){
+		if(tip == 0){
+			// 降序排序
+			for(let i=1;i<arr.length;i++){
+				for(let j = i;j>0;j--){
+					if(arr[j][obj]>arr[j-1][obj]){
+						let s = arr[j];
+						 arr[j] = arr[j-1];
+						 arr[j-1] = s;
+					}
+				}
+			}
+			return arr;
+		}else if(tip == 1){
+			// 升序排序
+			for(let i=1;i<arr.length;i++){
+				for(let j = i;j>0;j--){
+					if(arr[j][obj]<arr[j-1][obj]){
+						let s = arr[j];
+						 arr[j] = arr[j-1];
+						 arr[j-1] = s;
+					}
+				}
+			}
+			return arr;
+		}
 	}
 }

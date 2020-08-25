@@ -14,11 +14,11 @@
 		<view class="main">
 			<view class="requester" v-for="(item,index) in requesters" :key="index">
 				<view class="request-top">
-					<view class="reject btn">拒绝</view>
+					<view class="reject btn" @tap="refuse(item.id)">拒绝</view>
 					<view class="header-img">
 						<image :src="item.imgurl"></image>
 					</view>
-					<view class="agree btn">同意</view>
+					<view class="agree btn" @tap="agree(item.id)">同意</view>
 				</view>
 				<view class="request-center">
 					<view class="title">{{item.name}}</view>
@@ -33,7 +33,6 @@
 </template>
 
 <script>
-	import datas from '../../commons/js/data.js'
 	import myfun from '../../commons/js/myfun.js'
 	export default {
 		data() {
@@ -140,12 +139,77 @@
 			changeTime:function(date){
 				return myfun.dateTime(date)
 			},
-			getRequesters(){
-				this.requesters = datas.friends();
-				for(let i=0;i<this.requesters.length;i++){
-					this.requesters[i].imgurl = '../../static/images/' + this.requesters[i].imgurl
-				}
-			}
+			// 拒绝好友申请
+			refuse(fid){
+				uni.request({
+					url:this.serverUrl + '/friend/deletefriend',
+					data:{
+						uid:this.uid,
+						fid:fid,
+						token:this.token
+					},
+					method:'POST',
+					success: (data) => {
+						let status = data.data.status;
+						if(status == 200){
+							for(let i = 0;i<this.requesters.length;i++){
+								if(this.requesters[i].id == fid){
+									this.requesters.splice(i,1)
+								}
+							}
+						}else if(status == 500){
+							uni.showToast({
+								title:'服务器出错了！',
+								icon:'none',
+								duration:2000
+							})
+						}else if(status == 300){
+							uni.navigateTo({
+								url:'../signin/signin?name='+this.myname
+							})
+						}
+					}
+				})
+			},
+			// 同意好友申请
+		    agree(fid){
+				uni.request({
+					url:this.serverUrl + '/friend/updateFriendState',
+					data:{
+						uid:this.uid,
+						fid:fid,
+						token:this.token
+					},
+					method:'POST',
+					success: (data) => {
+						let status = data.data.status;
+						if(status == 200){
+							for(let i = 0;i<this.requesters.length;i++){
+								if(this.requesters[i].id == fid){
+									this.requesters.splice(i,1)
+								}
+							}
+						}else if(status == 500){
+							uni.showToast({
+								title:'服务器出错了！',
+								icon:'none',
+								duration:2000
+							})
+						}else if(status == 300){
+							uni.navigateTo({
+								url:'../signin/signin?name='+this.myname
+							})
+						}
+					}
+				})
+			},
+			// 同意好友申请
+			// getRequesters(){
+			// 	this.requesters = datas.friends();
+			// 	for(let i=0;i<this.requesters.length;i++){
+			// 		this.requesters[i].imgurl = '../../static/images/' + this.requesters[i].imgurl
+			// 	}
+			// }
 		}
 	}
 </script>
