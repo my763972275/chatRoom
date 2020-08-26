@@ -293,7 +293,7 @@
 					url:this.serverUrl + '/user/getmarkname',
 					data:{
 						uid:this.uid,
-						fid:this.fid,
+						fid:this.id,
 						token:this.token
 					},
 					method:'POST',
@@ -302,9 +302,9 @@
 						if(status == 200){
 							let res = data.data.result
 							// console.log(res)
-							// if(res.markname != undefined){
-							// 	this.markname = res.markname;
-							// }
+							if(res.markname != undefined){
+								this.markname = res.markname;
+							}
 						}else if(status == 300){
 							uni.navigateTo({
 								url:'../signin/signin?name='+this.myname

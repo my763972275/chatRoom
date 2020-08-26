@@ -68,7 +68,7 @@ export default {
 		toChatRoom(data) {
 			console.log(data)
 			// uni.navigateTo({
-			// 	url: '../chatroom/chatroom?id=' + data.id + '&name=' + data.name + '&imgurl=' + data.imgurl + '&type=' + data.type
+			// 	url: '../chatroom/chatroom?id=' + data._id + '&name=' + data.name + '&imgurl=' + data.imgurl + '&type=' + data.type
 			// });
 		},
 		//获取页面高度

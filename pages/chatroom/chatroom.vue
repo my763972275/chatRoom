@@ -115,7 +115,8 @@
 			this.type = e.type;
 			this.fimgurl = e.imgurl
 			this.getStorages()
-			this.getMsg(this.nowpage);
+			// this.getMsg(this.nowpage);
+			this.getChatMsg()
 			this.receiveSocketMsg();
 			// this.nextPage();
 		},
@@ -467,6 +468,7 @@
 			// socket聊天数据接收
 			receiveSocketMsg(){
 				this.socket.on('msg',(msg,fromid) => {
+					console.log(msg)
 					if(fromid == this.fid){
 						this.animate = true;
 						let len = this.msgs.length;

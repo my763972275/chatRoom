@@ -199,7 +199,7 @@ export default {
 				url: this.serverUrl + '/index/getfriend',
 				data: {
 					uid: this.uid,
-					state: 1,
+					state: 2,
 					token: this.token
 				},
 				method: 'POST',
@@ -209,6 +209,7 @@ export default {
 					if (status == 200) {
 						this.noone = true;
 						let res = data.data.result;
+						// console.log(res)
 						this.requestData = res.length;
 						if (res.length > 0) {
 							this.requestTime = res[0].lastTime;

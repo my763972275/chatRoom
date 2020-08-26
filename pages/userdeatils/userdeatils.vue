@@ -184,6 +184,7 @@ export default {
 					let status = data.data.status;
 					if (status == 200) {
 						let res = data.data.result;
+						console.log(res)
 						// 处理头像链接
 						this.cropFilePath = this.serverUrl + res.imgurl;
 						// 处理简介
@@ -355,9 +356,10 @@ export default {
 				method: 'POST',
 				success: data => {
 					let status = data.data.status;
+					// console.log(data.data)
 					if (status == 200) {
-						this.dataarr[type] = e;
-						if (type == 'psw') {
+						// this.dataarr[type] = e;
+						if (t == 'psw') {
 							uni.removeStorage({
 								key: 'user'
 							});
@@ -468,13 +470,13 @@ export default {
 				}
 				// this.getUser()
 			}
-			thia.modify();
+			this.modify();
 		},
 		// 好友昵称修改
 		updateFriendName() {
 			if (this.data.length > 0 && this.data != this.oldData) {
 				uni.request({
-					url: this.serverUrl + '/user/updatemarkname',
+					url: this.serverUrl + '/user/markname',
 					data: {
 						token: this.token,
 						uid: this.uid,
