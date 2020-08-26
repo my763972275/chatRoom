@@ -134,13 +134,27 @@ export default{
 		}
 		return Y+'-'+M+'-'+D;
 	},
+	//文件夹使用的时间
+	fileName(e){
+		let old = new Date(e);
+		let Y = old.getFullYear();
+		let M = old.getMonth()+1;
+		let D = old.getDate();
+		if(M<10){
+			M = '0'+M
+		}
+		if(D<10){
+			D = '0' +D
+		}
+		return Y+M+D;
+	},
 	//间隔时间差
 	spaceTime(old,now){
 		old = new Date(old);
 		now = new Date(now);
 		var told = old.getTime();
 		var tnow = now.getTime();
-		if(told >(tnow+1000*60*5)){
+		if(tnow >(told+1000*60*5)){
 			return now;
 		}else{
 			return ''

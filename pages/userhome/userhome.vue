@@ -5,7 +5,7 @@
 				<image src="../../static/images/back.png" mode=""></image>
 			</view>
 			<view class="top-bar-right">
-				<view class="more-img" v-if="relation == 0 || relation == 1" @tap="userDetail">
+				<view class="more-img"  @tap="userDetail">
 					<image src="../../static/images/more.png" mode=""></image>
 				</view>
 			</view>

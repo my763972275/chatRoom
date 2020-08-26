@@ -1,8 +1,8 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view class="top-bar-left" >
-				<image src="../../static/images/back.png" mode="widthFix" @tap="backOne"></image>
+			<view class="top-bar-left" @tap="backOne">
+				<image src="../../static/images/back.png" mode="widthFix" ></image>
 			</view>
 			<view class="top-bar-center">
 				<view class="title">好友请求</view>
@@ -131,7 +131,7 @@
 				})
 				
 			},
-			backOne:function(){
+			backOne(){
 				uni.navigateBack({
 					delta:1
 				})

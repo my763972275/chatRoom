@@ -20,7 +20,7 @@
 						<view class="name" v-html="item.name"></view>
 						<view class="email" v-html="item.email"></view>
 					</view>
-					<view class="right-bt send" v-if="item.tip == 1">发消息</view>
+					<view class="right-bt send" v-if="item.tip == 1" @tap="toChatRoom(item)">发消息</view>
 					<view class="right-bt add" v-if="item.tip == 0" @tap="addFriendBtn(item._id)">加好友</view>
 				</view>
 			</view>
@@ -64,6 +64,13 @@ export default {
 		this.getElementStyle();
 	},
 	methods: {
+		// 跳转到聊天页面
+		toChatRoom(data) {
+			console.log(data)
+			// uni.navigateTo({
+			// 	url: '../chatroom/chatroom?id=' + data.id + '&name=' + data.name + '&imgurl=' + data.imgurl + '&type=' + data.type
+			// });
+		},
 		//获取页面高度
 		getElementStyle(){
 			const query = uni.createSelectorQuery().in(this);
