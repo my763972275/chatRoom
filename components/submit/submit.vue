@@ -179,7 +179,7 @@
 			},
 			//选择定位
 			chooseLocation(){
-				uni.chooseAddress({
+				uni.chooseLocation({
 					success:res => {
 						let data = {
 							name:res.name,
@@ -187,7 +187,9 @@
 							latitude:res.latitude,
 							longitude:res.longitude
 						}
-						this.send(data,3)
+						// json转成字符串
+						let stringData = JSON.stringify(data)
+						this.send(stringData,3)
 					}
 				})
 			},

@@ -33,7 +33,6 @@
 				<view class="define"  @tap="addSubmit">确定</view>
 			</view>
 			<view class="modify-main">
-				<!-- <input type="text"  v-model="pwd" class="modify-pwd" placeholder="请输入原密码" placeholder-style="color:#aaa"/> -->
 				<textarea v-model="msg" class="modify-content"/>
 			</view>
 		</view>
@@ -66,10 +65,11 @@ export default {
 	methods: {
 		// 跳转到聊天页面
 		toChatRoom(data) {
-			console.log(data)
-			// uni.navigateTo({
-			// 	url: '../chatroom/chatroom?id=' + data._id + '&name=' + data.name + '&imgurl=' + data.imgurl + '&type=' + data.type
-			// });
+			let name = data.name.replace(/<span style='color:#4AAAFF;'>/g,'')
+			name = name.replace(new RegExp('</span>','gm'),'')
+			uni.navigateTo({
+				url: '../chatroom/chatroom?id=' + data._id + '&name=' + name + '&imgurl=' + data.imgurl + '&type=' + 0
+			});
 		},
 		//获取页面高度
 		getElementStyle(){

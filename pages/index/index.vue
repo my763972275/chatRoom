@@ -54,7 +54,6 @@
 </template>
 
 <script>
-import datas from '../../commons/js/data.js';
 import myfun from '../../commons/js/myfun.js';
 export default {
 	data() {
@@ -78,13 +77,13 @@ export default {
 		this.receiveSocketMsg();
 	},
 	onPullDownRefresh() {
-		this.friends = [];
-		this.getStorages();
-		this.getFriends();
-		this.friendRequest();
-		setTimeout(function() {
-			uni.stopPullDownRefresh();
-		}, 1000);
+	    this.friends = [];
+	    this.getStorages();
+	    this.getFriends();
+	    this.friendRequest();
+	    setTimeout(function () {
+	        uni.stopPullDownRefresh();
+	    }, 1000);
 	},
 	methods: {
 		changeTime: function(date) {
@@ -107,7 +106,7 @@ export default {
 			} catch (e) {}
 		},
 		// 获取好友列表
-		getFriends: function() {
+		getFriends() {
 			uni.request({
 				url: this.serverUrl + '/index/getfriend',
 				data: {
@@ -119,7 +118,6 @@ export default {
 				success: data => {
 					this.refresh = true;
 					let status = data.data.status;
-					// console.log(data.data)
 					if (status == 200) {
 						let res = data.data.result;
 						if (res.length > 0) {
@@ -156,7 +154,7 @@ export default {
 			});
 		},
 		// 获取群列表
-		getGroup: function() {
+		getGroup(){
 			uni.request({
 				url: this.serverUrl + '/index/getgroup',
 				data: {
@@ -199,7 +197,7 @@ export default {
 				url: this.serverUrl + '/index/getfriend',
 				data: {
 					uid: this.uid,
-					state: 2,
+					state: 1,
 					token: this.token
 				},
 				method: 'POST',
@@ -209,7 +207,6 @@ export default {
 					if (status == 200) {
 						this.noone = true;
 						let res = data.data.result;
-						// console.log(res)
 						this.requestData = res.length;
 						if (res.length > 0) {
 							this.requestTime = res[0].lastTime;
@@ -324,14 +321,14 @@ export default {
 			});
 		},
 		// 跳转到搜索页面
-		toSearch: function() {
+		toSearch(){
 			uni.navigateTo({
 				url: '../search/search'
 			});
 		},
 		//socket 模块
 		//用户登录socket注册
-		join: function(uid) {
+		join(uid) {
 			this.socket.emit('login', uid);
 		},
 		// socket聊天数据接收

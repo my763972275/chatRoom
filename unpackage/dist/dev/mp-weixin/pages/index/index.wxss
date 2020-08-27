@@ -53,105 +53,147 @@
   border-bottom: rgba(39, 40, 50, 0.1);
 }
 .top-bar .top-bar-left {
-  float: left;
-  padding-left: 20rpx;
+    float: left;
+    padding-left: 20rpx;
 }
 .top-bar .top-bar-left image {
-  margin-top: 10rpx;
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 16rpx;
+      margin-top: 10rpx;
+      width: 80rpx;
+      height: 80rpx;
+      border-radius: 16rpx;
 }
 .top-bar .top-bar-center {
-  position: absolute;
-  text-align: center;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  margin: auto;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
 }
 .top-bar .top-bar-center .logo {
-  padding-top: 19rpx;
-  width: 88rpx;
-  height: 42rpx;
+      padding-top: 19rpx;
+      width: 88rpx;
+      height: 42rpx;
 }
 .top-bar .top-bar-right {
-  float: right;
-  padding-right: 14rpx;
+    float: right;
+    padding-right: 14rpx;
 }
 .top-bar .top-bar-right .icon {
-  width: 88rpx;
-  height: 88rpx;
-  display: inline-block;
+      width: 88rpx;
+      height: 88rpx;
+      display: inline-block;
 }
 .top-bar .top-bar-right image {
-  padding: 18rpx 0 0 18rpx;
-  width: 52rpx;
-  height: 52rpx;
+      padding: 18rpx 0 0 18rpx;
+      width: 52rpx;
+      height: 52rpx;
 }
 .main {
   padding-top: 104rpx;
   width: 90%;
+}
+.refresh {
+  text-align: center;
+  padding-top: 480rpx;
+}
+.refresh image {
+    width: 32rpx;
+    height: 32rpx;
+}
+.refresh .ref-title {
+    padding-top: 10rpx;
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    color: rgba(39, 40, 50, 0.4);
+    line-height: 40rpx;
+}
+.noone {
+  text-align: center;
+  padding-top: 400rpx;
+}
+.noone image {
+    height: 250rpx;
+    width: 158rpx;
+}
+.noone .no-title {
+    padding: 32rpx 0;
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular, PingFang SC;
+    color: rgba(39, 40, 50, 0.4);
+    line-height: 40rpx;
+}
+.noone .search-bt {
+    display: inline-block;
+    width: 240rpx;
+    height: 96rpx;
+    background: #ffe431;
+    box-shadow: 0px 52rpx 36rpx -32rpx rgba(255, 228, 49, 0.4);
+    border-radius: 48rpx;
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular,PingFang SC;
+    color: #272832;
+    line-height: 96rpx;
 }
 .friend-list {
   height: 96rpx;
   padding: 16rpx 0;
 }
 .friend-list:active {
-  background-color: #f3f4f6;
+    background-color: #f3f4f6;
 }
 .friend-list .friend-list-l {
-  position: relative;
-  float: left;
+    position: relative;
+    float: left;
 }
 .friend-list .friend-list-l image {
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: 20rpx;
-  background-color: #ffe431;
+      width: 96rpx;
+      height: 96rpx;
+      border-radius: 20rpx;
+      background-color: #ffe431;
 }
 .friend-list .friend-list-l .tip {
-  position: absolute;
-  top: -6rpx;
-  z-index: 100;
-  left: 68rpx;
-  min-width: 36rpx;
-  height: 36rpx;
-  font-size: 24rpx;
-  color: #fff;
-  line-height: 36rpx;
-  text-align: center;
-  border-radius: 18rpx;
-  background: #ff5d5b;
-  padding: 0 8rpx;
+      position: absolute;
+      top: -6rpx;
+      z-index: 100;
+      left: 68rpx;
+      min-width: 22rpx;
+      height: 36rpx;
+      font-size: 24rpx;
+      color: #fff;
+      line-height: 36rpx;
+      text-align: center;
+      border-radius: 18rpx;
+      background: #ff5d5b;
+      padding: 0 8rpx;
 }
 .friend-list .friend-list-r {
-  padding-left: 128rpx;
+    padding-left: 128rpx;
 }
 .friend-list .friend-list-r .top {
-  height: 50rpx;
+      height: 50rpx;
 }
 .friend-list .friend-list-r .top .name {
-  float: left;
-  font-size: 36rpx;
-  font-weight: 400;
-  line-height: 50rpx;
-  color: #272832;
+        float: left;
+        font-size: 36rpx;
+        font-weight: 400;
+        line-height: 50rpx;
+        color: #272832;
 }
 .friend-list .friend-list-r .top .time {
-  float: right;
-  font-size: 24rpx;
-  line-height: 50rpx;
-  color: rgba(39, 40, 50, 0.4);
+        float: right;
+        font-size: 24rpx;
+        line-height: 50rpx;
+        color: rgba(39, 40, 50, 0.4);
 }
 .friend-list .info {
-  font-size: 28rpx;
-  color: rgba(39, 40, 50, 0.6);
-  line-height: 40rpx;
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
+    font-size: 28rpx;
+    color: rgba(39, 40, 50, 0.6);
+    line-height: 40rpx;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
 }
 

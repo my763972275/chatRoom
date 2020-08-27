@@ -156,6 +156,10 @@ export default {
 		this.getMarkName();
 	},
 	methods: {
+		// 时间处理
+		changeTime(date) {
+			return myfun.detailTime(date);
+		},
 		// 获取缓存数据
 		getStorages() {
 			try {
@@ -258,10 +262,7 @@ export default {
 				});
 			}
 		},
-		// 时间处理
-		changeTime(date) {
-			return myfun.detailTime(date);
-		},
+		
 		//性别选择器
 		bindPickerChange: function(e) {
 			let oldIndex = this.index;

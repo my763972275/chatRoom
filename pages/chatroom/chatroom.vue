@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<view class="top-bar">
-			<view class="top-bar-left" @tap="backOne">
+			<view class="top-bar-left" @tap="backTo">
 				<image src="../../static/images/back.png" mode=""></image>
 			</view>
 			<view class="top-bar-center">
@@ -78,7 +78,6 @@
 </template>
 
 <script>
-	import datas from '../../commons/js/data.js';
 	import myfun from '../../commons/js/myfun.js';
 	import submit from '../../components/submit/submit.vue';
 	const innerAudioContext = uni.createInnerAudioContext();
@@ -114,11 +113,9 @@
 			this.fname = e.name;
 			this.type = e.type;
 			this.fimgurl = e.imgurl
-			this.getStorages()
-			// this.getMsg(this.nowpage);
-			this.getChatMsg()
+			this.getStorages();
+			this.getChatMsg(this.nowpage);
 			this.receiveSocketMsg();
-			// this.nextPage();
 		},
 		methods:{
 			// 获取缓存数据
@@ -140,10 +137,10 @@
 				}
 			},
 			// 返回上一页
-			backOne:function(){
+			backTo(){
 				uni.navigateBack({
-					delta:1
-				})
+				    delta: 1
+				});
 			},
 			//滚动到底部
 			goBottom(){
@@ -151,7 +148,7 @@
 				this.scrollToView = '';
 				this.$nextTick(function(){
 					let len = this.msgs.length -1;
-					this.scrollToView = 'msg'+this.msgs[len].tip;
+					this.scrollToView = 'msg'+this.msgs[len].id;
 				})
 			},
 			//处理时间
@@ -174,46 +171,10 @@
 						this.animationData = animation.export()
 						i++;
 						if(i>40){
-							this.getMsg(this.nowpage)
+							this.getChatMsg(this.nowpage)
 						}
 					}.bind(this),200)
 				}
-			},
-			// 获取聊天消息
-			getMsg(page){
-				let msg = datas.message();
-				let maxpages = msg.length;
-				if(msg.length>(page+1)*10){
-					maxpages = (page+1)*10;
-					this.nowpage++;
-					this.animate = false;
-				}else{
-					this.nowpage = -1;
-				}
-				for(var i = page * 10; i < ( page + 1 ) * 10; i++){
-					msg[i].imgurl = '../../static/images/'+msg[i].imgurl;
-					//时间间隔
-					if(i < msg.length-1){
-						let t = myfun.spaceTime(this.oldTime,msg[i].time)
-						if(t){
-							this.oldTime = t;
-						}
-						msg[i].time = t;
-					}
-				    //补充图片地址
-				    if(msg[i].types == 1){
-					    msg[i].message = '../../static/images/'+msg[i].message
-						this.imgMsg.unshift(msg[i].message);
-				    }
-					this.msgs.unshift(msg[i])
-				}
-				//自动定位到底部
-				this.$nextTick(function(){
-					this.scrollToView = 'msg'+this.msgs[maxpages-page*10-1].tip
-				})
-				clearInterval(this.loading)
-				this.isloading = true;
-				this.beginloading = true;
 			},
 			// 获取聊天消息
 			getChatMsg(page){
@@ -257,6 +218,10 @@
 									    msg[i].message = this.serverUrl + msg[i].message
 										imgarr.push(msg[i].message)
 								    }
+									// json字符串还原
+									if(msg[i].types == 3){
+										msg[i].message = JSON.parse(msg[i].message)
+									}
 									// this.msgs.unshift(msg[i])
 								}
 								this.msgs = msg.concat(this.msgs)
@@ -342,59 +307,10 @@
 				})
 			},
 			inputs(e){
-				// this.animate = true;
-				// let len = this.msgs.length;
-				// let nowTime = new Date();
-				// //时间间隔
-				// 	let t = myfun.spaceTime(this.oldTime,nowTime)
-				// 	if(t){
-				// 		this.oldTime = t;
-				// 	}
-				// 	nowTime = t;
-				// let data = {
-				// 	id:'b',
-				// 	imgurl:"../../static/images/user3.jpg",
-				// 	message:e.message,
-				// 	types:e.types,
-				// 	time:nowTime,
-				// 	tip:len
-				// }
-				// this.msgs.push(data)
-				// this.$nextTick(function(){
-				// 	this.scrollToView = 'msg' + len;
-				// })
-				// if(e.types == 1){
-				// 	this.imgMsg.push(e.message)
-				// }
 				this.receiveMsg(e,this.uid,this.uimgurl,0)
 			},
 			// 接受消息
 			receiveMsg(e,id,img,tip){
-				// tip=0 表示自己发的 tip=1
-				this.animate = true;
-				let len = this.msgs.length;
-				let nowTime = new Date();
-				//时间间隔
-				let t = myfun.spaceTime(this.oldTime,nowTime)
-				if(t){
-					this.oldTime = t;
-				}
-				if(tip == 1){
-					
-				}
-				nowTime = t;
-				let data = {
-					fromId:id,   //发送者ID
-					imgurl:img,
-					message:e.message,
-					types:e.types,
-					time:nowTime,
-					id:len
-				}
-				this.msgs.push(data)
-				this.$nextTick(function(){
-					this.scrollToView = 'msg' + len;
-				})
 				// socket提交
 				if(e.types == 0 || e.types == 3){
 					// 发送给后端
@@ -420,8 +336,6 @@
 									types:e.types
 								}
 								this.sendSocket(data)
-								// let path = this.serverUrl+uploadFileRes.data;
-								// this.img.push(path)
 							}
 					    });
 				}
@@ -444,11 +358,35 @@
 									types:e.types
 								}
 								this.sendSocket(data)
-								// let path = this.serverUrl+uploadFileRes.data;
-								// this.img.push(path)
 							}
 					    });
 				}
+				// tip=0 表示自己发的 tip=1
+				this.animate = true;
+				let len = this.msgs.length;
+				let nowTime = new Date();
+				//时间间隔
+				let t = myfun.spaceTime(this.oldTime,nowTime)
+				if(t){
+					this.oldTime = t;
+				}
+				nowTime = t;
+				if(e.types == 3){
+					e.message = JSON.parse(e.message)
+				}
+				let data = {
+					fromId:id,   //发送者ID
+					imgurl:img,
+					message:e.message,
+					types:e.types,
+					time:nowTime,
+					id:len
+				}
+				this.msgs.push(data)
+				this.$nextTick(function(){
+					this.scrollToView = 'msg' + len;
+				})
+				
 				
 			},
 			heights(e){
@@ -467,9 +405,9 @@
 			},
 			// socket聊天数据接收
 			receiveSocketMsg(){
-				this.socket.on('msg',(msg,fromid) => {
-					console.log(msg)
-					if(fromid == this.fid){
+				this.socket.on('msg',(msg,fromid,tip) => {
+					// console.log(msg)
+					if(fromid == this.fid && tip == 0){
 						this.animate = true;
 						let len = this.msgs.length;
 						let nowTime = new Date();

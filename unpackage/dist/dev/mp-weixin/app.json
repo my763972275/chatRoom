@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/signin/signin",
     "pages/signup/signup",
     "pages/index/index",
     "pages/chatroom/chatroom",
@@ -7,7 +8,7 @@
     "pages/userdeatils/userdeatils",
     "pages/userhome/userhome",
     "pages/search/search",
-    "pages/signin/signin"
+    "pages/test/test"
   ],
   "subPackages": [],
   "window": {

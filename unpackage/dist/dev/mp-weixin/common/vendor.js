@@ -144,7 +144,7 @@ function queue(hooks, data) {
   for (var i = 0; i < hooks.length; i++) {
     var hook = hooks[i];
     if (promise) {
-      promise = Promise.resolve(wrapperHook(hook));
+      promise = Promise.then(wrapperHook(hook));
     } else {
       var res = hook(data);
       if (isPromise(res)) {
@@ -245,16 +245,12 @@ var SYNC_API_RE =
 
 var CONTEXT_API_RE = /^create|Manager$/;
 
-// Context例外情况
-var CONTEXT_API_RE_EXC = ['createBLEConnection'];
-
-// 同步例外情况
 var ASYNC_API = ['createBLEConnection'];
 
 var CALLBACK_API_RE = /^on|^off/;
 
 function isContextApi(name) {
-  return CONTEXT_API_RE.test(name) && CONTEXT_API_RE_EXC.indexOf(name) === -1;
+  return CONTEXT_API_RE.test(name);
 }
 function isSyncApi(name) {
   return SYNC_API_RE.test(name) && ASYNC_API.indexOf(name) === -1;
@@ -346,9 +342,9 @@ function upx2px(number, newDeviceWidth) {
   result = Math.floor(result + EPS);
   if (result === 0) {
     if (deviceDPR === 1 || !isIOS) {
-      result = 1;
+      return 1;
     } else {
-      result = 0.5;
+      return 0.5;
     }
   }
   return number < 0 ? -result : result;
@@ -358,12 +354,14 @@ var interceptors = {
   promiseInterceptor: promiseInterceptor };
 
 
+
+
 var baseApi = /*#__PURE__*/Object.freeze({
   __proto__: null,
   upx2px: upx2px,
+  interceptors: interceptors,
   addInterceptor: addInterceptor,
-  removeInterceptor: removeInterceptor,
-  interceptors: interceptors });
+  removeInterceptor: removeInterceptor });
 
 
 var previewImage = {
@@ -421,10 +419,7 @@ var protocols = {
 
 
 var todos = [
-'vibrate',
-'preloadPage',
-'unPreloadPage',
-'loadSubPackage'];
+'vibrate'];
 
 var canIUses = [];
 
@@ -456,9 +451,7 @@ function processArgs(methodName, fromArgs) {var argsOption = arguments.length > 
           toArgs[keyOption.name ? keyOption.name : key] = keyOption.value;
         }
       } else if (CALLBACKS.indexOf(key) !== -1) {
-        if (isFn(fromArgs[key])) {
-          toArgs[key] = processCallback(methodName, fromArgs[key], returnValue);
-        }
+        toArgs[key] = processCallback(methodName, fromArgs[key], returnValue);
       } else {
         if (!keepFromArgs) {
           toArgs[key] = fromArgs[key];
@@ -573,6 +566,10 @@ var extraApi = /*#__PURE__*/Object.freeze({
 
 
 var getEmitter = function () {
+  if (typeof getUniEmitter === 'function') {
+    /* eslint-disable no-undef */
+    return getUniEmitter;
+  }
   var Emitter;
   return function getUniEmitter() {
     if (!Emitter) {
@@ -605,6 +602,8 @@ var eventApi = /*#__PURE__*/Object.freeze({
   $off: $off,
   $once: $once,
   $emit: $emit });
+
+
 
 
 var api = /*#__PURE__*/Object.freeze({
@@ -659,8 +658,6 @@ Component = function Component() {var options = arguments.length > 0 && argument
 var PAGE_EVENT_HOOKS = [
 'onPullDownRefresh',
 'onReachBottom',
-'onAddToFavorites',
-'onShareTimeline',
 'onShareAppMessage',
 'onPageScroll',
 'onResize',
@@ -723,10 +720,10 @@ function initVueComponent(Vue, vueOptions) {
   var VueComponent;
   if (isFn(vueOptions)) {
     VueComponent = vueOptions;
+    vueOptions = VueComponent.extendOptions;
   } else {
     VueComponent = Vue.extend(vueOptions);
   }
-  vueOptions = VueComponent.options;
   return [VueComponent, vueOptions];
 }
 
@@ -795,14 +792,14 @@ function createObserver(name) {
 }
 
 function initBehaviors(vueOptions, initBehavior) {
-  var vueBehaviors = vueOptions.behaviors;
-  var vueExtends = vueOptions.extends;
-  var vueMixins = vueOptions.mixins;
+  var vueBehaviors = vueOptions['behaviors'];
+  var vueExtends = vueOptions['extends'];
+  var vueMixins = vueOptions['mixins'];
 
-  var vueProps = vueOptions.props;
+  var vueProps = vueOptions['props'];
 
   if (!vueProps) {
-    vueOptions.props = vueProps = [];
+    vueOptions['props'] = vueProps = [];
   }
 
   var behaviors = [];
@@ -814,11 +811,11 @@ function initBehaviors(vueOptions, initBehavior) {
           vueProps.push('name');
           vueProps.push('value');
         } else {
-          vueProps.name = {
+          vueProps['name'] = {
             type: String,
             default: '' };
 
-          vueProps.value = {
+          vueProps['value'] = {
             type: [String, Number, Boolean, Array, Object, Date],
             default: '' };
 
@@ -887,7 +884,7 @@ function initProperties(props) {var isBehavior = arguments.length > 1 && argumen
     Object.keys(props).forEach(function (key) {
       var opts = props[key];
       if (isPlainObject(opts)) {// title:{type:String,default:''}
-        var value = opts.default;
+        var value = opts['default'];
         if (isFn(value)) {
           value = value();
         }
@@ -926,11 +923,6 @@ function wrapper$1(event) {
     event.detail = {};
   }
 
-  if (hasOwn(event, 'markerId')) {
-    event.detail = typeof event.detail === 'object' ? event.detail : {};
-    event.detail.markerId = event.markerId;
-  }
-
   if (isPlainObject(event.detail)) {
     event.target = Object.assign({}, event.target, event.detail);
   }
@@ -947,18 +939,7 @@ function getExtraValue(vm, dataPathsArray) {
       var propPath = dataPathArray[1];
       var valuePath = dataPathArray[3];
 
-      var vFor;
-      if (Number.isInteger(dataPath)) {
-        vFor = dataPath;
-      } else if (!dataPath) {
-        vFor = context;
-      } else if (typeof dataPath === 'string' && dataPath) {
-        if (dataPath.indexOf('#s#') === 0) {
-          vFor = dataPath.substr(3);
-        } else {
-          vFor = vm.__get_value(dataPath, context);
-        }
-      }
+      var vFor = dataPath ? vm.__get_value(dataPath, context) : context;
 
       if (Number.isInteger(vFor)) {
         context = value;
@@ -1008,12 +989,6 @@ function processEventExtra(vm, extra, event) {
         } else {
           if (dataPath === '$event') {// $event
             extraObj['$' + index] = event;
-          } else if (dataPath === 'arguments') {
-            if (event.detail && event.detail.__args__) {
-              extraObj['$' + index] = event.detail.__args__;
-            } else {
-              extraObj['$' + index] = [event];
-            }
           } else if (dataPath.indexOf('$event.') === 0) {// $event.target.value
             extraObj['$' + index] = vm.__get_value(dataPath.replace('$event.', ''), event);
           } else {
@@ -1094,26 +1069,17 @@ function isMatchEventType(eventType, optType) {
 
 }
 
-function getContextVm(vm) {
-  var $parent = vm.$parent;
-  // 父组件是 scoped slots 或者其他自定义组件时继续查找
-  while ($parent && $parent.$parent && ($parent.$options.generic || $parent.$parent.$options.generic || $parent.$scope._$vuePid)) {
-    $parent = $parent.$parent;
-  }
-  return $parent && $parent.$parent;
-}
-
 function handleEvent(event) {var _this = this;
   event = wrapper$1(event);
 
   // [['tap',[['handle',[1,2,a]],['handle1',[1,2,a]]]]]
   var dataset = (event.currentTarget || event.target).dataset;
   if (!dataset) {
-    return console.warn('事件信息不存在');
+    return console.warn("\u4E8B\u4EF6\u4FE1\u606F\u4E0D\u5B58\u5728");
   }
   var eventOpts = dataset.eventOpts || dataset['event-opts']; // 支付宝 web-view 组件 dataset 非驼峰
   if (!eventOpts) {
-    return console.warn('事件信息不存在');
+    return console.warn("\u4E8B\u4EF6\u4FE1\u606F\u4E0D\u5B58\u5728");
   }
 
   // [['handle',[1,2,a]],['handle1',[1,2,a]]]
@@ -1135,8 +1101,12 @@ function handleEvent(event) {var _this = this;
         var methodName = eventArray[0];
         if (methodName) {
           var handlerCtx = _this.$vm;
-          if (handlerCtx.$options.generic) {// mp-weixin,mp-toutiao 抽象节点模拟 scoped slots
-            handlerCtx = getContextVm(handlerCtx) || handlerCtx;
+          if (
+          handlerCtx.$options.generic &&
+          handlerCtx.$parent &&
+          handlerCtx.$parent.$parent)
+          {// mp-weixin,mp-toutiao 抽象节点模拟 scoped slots
+            handlerCtx = handlerCtx.$parent.$parent;
           }
           if (methodName === '$emit') {
             handlerCtx.$emit.apply(handlerCtx,
@@ -1186,9 +1156,7 @@ var hooks = [
 'onShow',
 'onHide',
 'onError',
-'onPageNotFound',
-'onThemeChange',
-'onUnhandledRejection'];
+'onPageNotFound'];
 
 
 function parseBaseApp(vm, _ref3)
@@ -1370,8 +1338,8 @@ function parseBaseComponent(vueComponentOptions)
 
   {
     // 微信 multipleSlots 部分情况有 bug，导致内容顺序错乱 如 u-list，提供覆盖选项
-    if (vueOptions['mp-weixin'] && vueOptions['mp-weixin'].options) {
-      Object.assign(options, vueOptions['mp-weixin'].options);
+    if (vueOptions['mp-weixin'] && vueOptions['mp-weixin']['options']) {
+      Object.assign(options, vueOptions['mp-weixin']['options']);
     }
   }
 
@@ -1436,10 +1404,6 @@ function parseBaseComponent(vueComponentOptions)
       __e: handleEvent } };
 
 
-  // externalClasses
-  if (vueOptions.externalClasses) {
-    componentOptions.externalClasses = vueOptions.externalClasses;
-  }
 
   if (Array.isArray(vueOptions.wxsCallMethods)) {
     vueOptions.wxsCallMethods.forEach(function (callMethod) {
@@ -1522,7 +1486,7 @@ var uni = {};
 if (typeof Proxy !== 'undefined' && "mp-weixin" !== 'app-plus') {
   uni = new Proxy({}, {
     get: function get(target, name) {
-      if (hasOwn(target, name)) {
+      if (target[name]) {
         return target[name];
       }
       if (baseApi[name]) {
@@ -2224,10 +2188,12 @@ if (true) {
   };
 
   formatComponentName = function (vm, includeFile) {
-    if (vm.$root === vm) {
-      if (vm.$options && vm.$options.__file) { // fixed by xxxxxx
-        return ('') + vm.$options.__file
+    {
+      if(vm.$scope && vm.$scope.is){
+        return vm.$scope.is
       }
+    }
+    if (vm.$root === vm) {
       return '<Root>'
     }
     var options = typeof vm === 'function' && vm.cid != null
@@ -2262,7 +2228,7 @@ if (true) {
     if (vm._isVue && vm.$parent) {
       var tree = [];
       var currentRecursiveSequence = 0;
-      while (vm && vm.$options.name !== 'PageBody') {
+      while (vm) {
         if (tree.length > 0) {
           var last = tree[tree.length - 1];
           if (last.constructor === vm.constructor) {
@@ -2274,7 +2240,7 @@ if (true) {
             currentRecursiveSequence = 0;
           }
         }
-        !vm.$options.isReserved && tree.push(vm);
+        tree.push(vm);
         vm = vm.$parent;
       }
       return '\n\nfound in\n\n' + tree
@@ -2297,7 +2263,13 @@ var uid = 0;
  * directives subscribing to it.
  */
 var Dep = function Dep () {
-  this.id = uid++;
+  // fixed by xxxxxx (nvue vuex)
+  /* eslint-disable no-undef */
+  if(typeof SharedObject !== 'undefined'){
+    this.id = SharedObject.uid++;
+  } else {
+    this.id = uid++;
+  }
   this.subs = [];
 };
 
@@ -2334,7 +2306,7 @@ Dep.prototype.notify = function notify () {
 // can be evaluated at a time.
 // fixed by xxxxxx (nvue shared vuex)
 /* eslint-disable no-undef */
-Dep.SharedObject = {};
+Dep.SharedObject = typeof SharedObject !== 'undefined' ? SharedObject : {};
 Dep.SharedObject.target = null;
 Dep.SharedObject.targetStack = [];
 
@@ -6553,10 +6525,10 @@ function initMixin (Vue) {
     initEvents(vm);
     initRender(vm);
     callHook(vm, 'beforeCreate');
-    !vm._$fallback && initInjections(vm); // resolve injections before data/props  
+    vm.mpHost !== 'mp-toutiao' && initInjections(vm); // resolve injections before data/props  
     initState(vm);
-    !vm._$fallback && initProvide(vm); // resolve provide after data/props
-    !vm._$fallback && callHook(vm, 'created');      
+    vm.mpHost !== 'mp-toutiao' && initProvide(vm); // resolve provide after data/props
+    vm.mpHost !== 'mp-toutiao' && callHook(vm, 'created');      
 
     /* istanbul ignore if */
     if ( true && config.performance && mark) {
@@ -7184,15 +7156,6 @@ function cloneWithData(vm) {
     ret[key] = vm[key];
     return ret
   }, ret);
-
-  // vue-composition-api
-  var rawBindings = vm.__secret_vfa_state__ && vm.__secret_vfa_state__.rawBindings;
-  if (rawBindings) {
-    Object.keys(rawBindings).forEach(function (key) {
-      ret[key] = vm[key];
-    });
-  }
-  
   //TODO 需要把无用数据处理掉，比如 list=>l0 则 list 需要移除，否则多传输一份数据
   Object.assign(ret, vm.$mp.data || {});
   if (
@@ -7281,7 +7244,7 @@ function mountComponent$1(
     }
   }
   
-  !vm._$fallback && callHook(vm, 'beforeMount');
+  vm.mpHost !== 'mp-toutiao' && callHook(vm, 'beforeMount');
 
   var updateComponent = function () {
     vm._update(vm._render(), hydrating);
@@ -7399,8 +7362,7 @@ function getTarget(obj, path) {
 
 function internalMixin(Vue) {
 
-  Vue.config.errorHandler = function(err, vm, info) {
-    Vue.util.warn(("Error in " + info + ": \"" + (err.toString()) + "\""), vm);
+  Vue.config.errorHandler = function(err) {
     console.error(err);
     /* eslint-disable no-undef */
     var app = getApp();
@@ -7545,10 +7507,7 @@ var LIFECYCLE_HOOKS$1 = [
     'onShow',
     'onHide',
     'onUniNViewMessage',
-    'onPageNotFound',
-    'onThemeChange',
     'onError',
-    'onUnhandledRejection',
     //Page
     'onLoad',
     // 'onShow',
@@ -7558,8 +7517,6 @@ var LIFECYCLE_HOOKS$1 = [
     'onPullDownRefresh',
     'onReachBottom',
     'onTabItemTap',
-    'onAddToFavorites',
-    'onShareTimeline',
     'onShareAppMessage',
     'onResize',
     'onPageScroll',
@@ -7657,21 +7614,939 @@ module.exports = g;
 
 /***/ }),
 /* 4 */
-/*!**************************************!*\
-  !*** F:/uni-app/chatRoom/pages.json ***!
-  \**************************************/
+/*!***************************************************!*\
+  !*** D:/test/mobile/chatRoom/chatRoom/pages.json ***!
+  \***************************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
 
 
 /***/ }),
-/* 5 */,
-/* 6 */,
-/* 7 */,
-/* 8 */,
+/* 5 */
+/*!*******************************************************!*\
+  !*** ./node_modules/@dcloudio/uni-stat/dist/index.js ***!
+  \*******************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(uni) {var _package = __webpack_require__(/*! ../package.json */ 6);function _createSuper(Derived) {return function () {var Super = _getPrototypeOf(Derived),result;if (_isNativeReflectConstruct()) {var NewTarget = _getPrototypeOf(this).constructor;result = Reflect.construct(Super, arguments, NewTarget);} else {result = Super.apply(this, arguments);}return _possibleConstructorReturn(this, result);};}function _possibleConstructorReturn(self, call) {if (call && (typeof call === "object" || typeof call === "function")) {return call;}return _assertThisInitialized(self);}function _assertThisInitialized(self) {if (self === void 0) {throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return self;}function _isNativeReflectConstruct() {if (typeof Reflect === "undefined" || !Reflect.construct) return false;if (Reflect.construct.sham) return false;if (typeof Proxy === "function") return true;try {Date.prototype.toString.call(Reflect.construct(Date, [], function () {}));return true;} catch (e) {return false;}}function _getPrototypeOf(o) {_getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) {return o.__proto__ || Object.getPrototypeOf(o);};return _getPrototypeOf(o);}function _inherits(subClass, superClass) {if (typeof superClass !== "function" && superClass !== null) {throw new TypeError("Super expression must either be null or a function");}subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } });if (superClass) _setPrototypeOf(subClass, superClass);}function _setPrototypeOf(o, p) {_setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {o.__proto__ = p;return o;};return _setPrototypeOf(o, p);}function _classCallCheck(instance, Constructor) {if (!(instance instanceof Constructor)) {throw new TypeError("Cannot call a class as a function");}}function _defineProperties(target, props) {for (var i = 0; i < props.length; i++) {var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);}}function _createClass(Constructor, protoProps, staticProps) {if (protoProps) _defineProperties(Constructor.prototype, protoProps);if (staticProps) _defineProperties(Constructor, staticProps);return Constructor;}
+
+var STAT_VERSION = _package.version;
+var STAT_URL = 'https://tongji.dcloud.io/uni/stat';
+var STAT_H5_URL = 'https://tongji.dcloud.io/uni/stat.gif';
+var PAGE_PVER_TIME = 1800;
+var APP_PVER_TIME = 300;
+var OPERATING_TIME = 10;
+
+var UUID_KEY = '__DC_STAT_UUID';
+var UUID_VALUE = '__DC_UUID_VALUE';
+
+function getUuid() {
+  var uuid = '';
+  if (getPlatformName() === 'n') {
+    try {
+      uuid = plus.runtime.getDCloudId();
+    } catch (e) {
+      uuid = '';
+    }
+    return uuid;
+  }
+
+  try {
+    uuid = uni.getStorageSync(UUID_KEY);
+  } catch (e) {
+    uuid = UUID_VALUE;
+  }
+
+  if (!uuid) {
+    uuid = Date.now() + '' + Math.floor(Math.random() * 1e7);
+    try {
+      uni.setStorageSync(UUID_KEY, uuid);
+    } catch (e) {
+      uni.setStorageSync(UUID_KEY, UUID_VALUE);
+    }
+  }
+  return uuid;
+}
+
+var getSgin = function getSgin(statData) {
+  var arr = Object.keys(statData);
+  var sortArr = arr.sort();
+  var sgin = {};
+  var sginStr = '';
+  for (var i in sortArr) {
+    sgin[sortArr[i]] = statData[sortArr[i]];
+    sginStr += sortArr[i] + '=' + statData[sortArr[i]] + '&';
+  }
+  // const options = sginStr.substr(0, sginStr.length - 1)
+  // sginStr = sginStr.substr(0, sginStr.length - 1) + '&key=' + STAT_KEY;
+  // const si = crypto.createHash('md5').update(sginStr).digest('hex');
+  return {
+    sign: '',
+    options: sginStr.substr(0, sginStr.length - 1) };
+
+};
+
+var getSplicing = function getSplicing(data) {
+  var str = '';
+  for (var i in data) {
+    str += i + '=' + data[i] + '&';
+  }
+  return str.substr(0, str.length - 1);
+};
+
+var getTime = function getTime() {
+  return parseInt(new Date().getTime() / 1000);
+};
+
+var getPlatformName = function getPlatformName() {
+  var platformList = {
+    'app-plus': 'n',
+    'h5': 'h5',
+    'mp-weixin': 'wx',
+    'mp-alipay': 'ali',
+    'mp-baidu': 'bd',
+    'mp-toutiao': 'tt',
+    'mp-qq': 'qq' };
+
+  return platformList["mp-weixin"];
+};
+
+var getPackName = function getPackName() {
+  var packName = '';
+  if (getPlatformName() === 'wx' || getPlatformName() === 'qq') {
+    // 兼容微信小程序低版本基础库
+    if (uni.canIUse('getAccountInfoSync')) {
+      packName = uni.getAccountInfoSync().miniProgram.appId || '';
+    }
+  }
+  return packName;
+};
+
+var getVersion = function getVersion() {
+  return getPlatformName() === 'n' ? plus.runtime.version : '';
+};
+
+var getChannel = function getChannel() {
+  var platformName = getPlatformName();
+  var channel = '';
+  if (platformName === 'n') {
+    channel = plus.runtime.channel;
+  }
+  return channel;
+};
+
+var getScene = function getScene(options) {
+  var platformName = getPlatformName();
+  var scene = '';
+  if (options) {
+    return options;
+  }
+  if (platformName === 'wx') {
+    scene = uni.getLaunchOptionsSync().scene;
+  }
+  return scene;
+};
+var First__Visit__Time__KEY = 'First__Visit__Time';
+var Last__Visit__Time__KEY = 'Last__Visit__Time';
+
+var getFirstVisitTime = function getFirstVisitTime() {
+  var timeStorge = uni.getStorageSync(First__Visit__Time__KEY);
+  var time = 0;
+  if (timeStorge) {
+    time = timeStorge;
+  } else {
+    time = getTime();
+    uni.setStorageSync(First__Visit__Time__KEY, time);
+    uni.removeStorageSync(Last__Visit__Time__KEY);
+  }
+  return time;
+};
+
+var getLastVisitTime = function getLastVisitTime() {
+  var timeStorge = uni.getStorageSync(Last__Visit__Time__KEY);
+  var time = 0;
+  if (timeStorge) {
+    time = timeStorge;
+  } else {
+    time = '';
+  }
+  uni.setStorageSync(Last__Visit__Time__KEY, getTime());
+  return time;
+};
+
+
+var PAGE_RESIDENCE_TIME = '__page__residence__time';
+var First_Page_residence_time = 0;
+var Last_Page_residence_time = 0;
+
+
+var setPageResidenceTime = function setPageResidenceTime() {
+  First_Page_residence_time = getTime();
+  if (getPlatformName() === 'n') {
+    uni.setStorageSync(PAGE_RESIDENCE_TIME, getTime());
+  }
+  return First_Page_residence_time;
+};
+
+var getPageResidenceTime = function getPageResidenceTime() {
+  Last_Page_residence_time = getTime();
+  if (getPlatformName() === 'n') {
+    First_Page_residence_time = uni.getStorageSync(PAGE_RESIDENCE_TIME);
+  }
+  return Last_Page_residence_time - First_Page_residence_time;
+};
+var TOTAL__VISIT__COUNT = 'Total__Visit__Count';
+var getTotalVisitCount = function getTotalVisitCount() {
+  var timeStorge = uni.getStorageSync(TOTAL__VISIT__COUNT);
+  var count = 1;
+  if (timeStorge) {
+    count = timeStorge;
+    count++;
+  }
+  uni.setStorageSync(TOTAL__VISIT__COUNT, count);
+  return count;
+};
+
+var GetEncodeURIComponentOptions = function GetEncodeURIComponentOptions(statData) {
+  var data = {};
+  for (var prop in statData) {
+    data[prop] = encodeURIComponent(statData[prop]);
+  }
+  return data;
+};
+
+var Set__First__Time = 0;
+var Set__Last__Time = 0;
+
+var getFirstTime = function getFirstTime() {
+  var time = new Date().getTime();
+  Set__First__Time = time;
+  Set__Last__Time = 0;
+  return time;
+};
+
+
+var getLastTime = function getLastTime() {
+  var time = new Date().getTime();
+  Set__Last__Time = time;
+  return time;
+};
+
+
+var getResidenceTime = function getResidenceTime(type) {
+  var residenceTime = 0;
+  if (Set__First__Time !== 0) {
+    residenceTime = Set__Last__Time - Set__First__Time;
+  }
+
+  residenceTime = parseInt(residenceTime / 1000);
+  residenceTime = residenceTime < 1 ? 1 : residenceTime;
+  if (type === 'app') {
+    var overtime = residenceTime > APP_PVER_TIME ? true : false;
+    return {
+      residenceTime: residenceTime,
+      overtime: overtime };
+
+  }
+  if (type === 'page') {
+    var _overtime = residenceTime > PAGE_PVER_TIME ? true : false;
+    return {
+      residenceTime: residenceTime,
+      overtime: _overtime };
+
+  }
+
+  return {
+    residenceTime: residenceTime };
+
+
+};
+
+var getRoute = function getRoute() {
+  var pages = getCurrentPages();
+  var page = pages[pages.length - 1];
+  var _self = page.$vm;
+
+  if (getPlatformName() === 'bd') {
+    return _self.$mp && _self.$mp.page.is;
+  } else {
+    return _self.$scope && _self.$scope.route || _self.$mp && _self.$mp.page.route;
+  }
+};
+
+var getPageRoute = function getPageRoute(self) {
+  var pages = getCurrentPages();
+  var page = pages[pages.length - 1];
+  var _self = page.$vm;
+  var query = self._query;
+  var str = query && JSON.stringify(query) !== '{}' ? '?' + JSON.stringify(query) : '';
+  // clear
+  self._query = '';
+  if (getPlatformName() === 'bd') {
+    return _self.$mp && _self.$mp.page.is + str;
+  } else {
+    return _self.$scope && _self.$scope.route + str || _self.$mp && _self.$mp.page.route + str;
+  }
+};
+
+var getPageTypes = function getPageTypes(self) {
+  if (self.mpType === 'page' || self.$mp && self.$mp.mpType === 'page' || self.$options.mpType === 'page') {
+    return true;
+  }
+  return false;
+};
+
+var calibration = function calibration(eventName, options) {
+  //  login 、 share 、pay_success 、pay_fail 、register 、title
+  if (!eventName) {
+    console.error("uni.report \u7F3A\u5C11 [eventName] \u53C2\u6570");
+    return true;
+  }
+  if (typeof eventName !== 'string') {
+    console.error("uni.report [eventName] \u53C2\u6570\u7C7B\u578B\u9519\u8BEF,\u53EA\u80FD\u4E3A String \u7C7B\u578B");
+    return true;
+  }
+  if (eventName.length > 255) {
+    console.error("uni.report [eventName] \u53C2\u6570\u957F\u5EA6\u4E0D\u80FD\u5927\u4E8E 255");
+    return true;
+  }
+
+  if (typeof options !== 'string' && typeof options !== 'object') {
+    console.error("uni.report [options] \u53C2\u6570\u7C7B\u578B\u9519\u8BEF,\u53EA\u80FD\u4E3A String \u6216 Object \u7C7B\u578B");
+    return true;
+  }
+
+  if (typeof options === 'string' && options.length > 255) {
+    console.error("uni.report [options] \u53C2\u6570\u957F\u5EA6\u4E0D\u80FD\u5927\u4E8E 255");
+    return true;
+  }
+
+  if (eventName === 'title' && typeof options !== 'string') {
+    console.error('uni.report [eventName] 参数为 title 时，[options] 参数只能为 String 类型');
+    return true;
+  }
+};
+
+var PagesJson = __webpack_require__(/*! uni-pages?{"type":"style"} */ 7).default;
+var statConfig = __webpack_require__(/*! uni-stat-config */ 8).default || __webpack_require__(/*! uni-stat-config */ 8);
+
+var resultOptions = uni.getSystemInfoSync();var
+
+Util = /*#__PURE__*/function () {
+  function Util() {_classCallCheck(this, Util);
+    this.self = '';
+    this._retry = 0;
+    this._platform = '';
+    this._query = {};
+    this._navigationBarTitle = {
+      config: '',
+      page: '',
+      report: '',
+      lt: '' };
+
+    this._operatingTime = 0;
+    this._reportingRequestData = {
+      '1': [],
+      '11': [] };
+
+    this.__prevent_triggering = false;
+
+    this.__licationHide = false;
+    this.__licationShow = false;
+    this._lastPageRoute = '';
+    this.statData = {
+      uuid: getUuid(),
+      ut: getPlatformName(),
+      mpn: getPackName(),
+      ak: statConfig.appid,
+      usv: STAT_VERSION,
+      v: getVersion(),
+      ch: getChannel(),
+      cn: '',
+      pn: '',
+      ct: '',
+      t: getTime(),
+      tt: '',
+      p: resultOptions.platform === 'android' ? 'a' : 'i',
+      brand: resultOptions.brand || '',
+      md: resultOptions.model,
+      sv: resultOptions.system.replace(/(Android|iOS)\s/, ''),
+      mpsdk: resultOptions.SDKVersion || '',
+      mpv: resultOptions.version || '',
+      lang: resultOptions.language,
+      pr: resultOptions.pixelRatio,
+      ww: resultOptions.windowWidth,
+      wh: resultOptions.windowHeight,
+      sw: resultOptions.screenWidth,
+      sh: resultOptions.screenHeight };
+
+
+  }_createClass(Util, [{ key: "_applicationShow", value: function _applicationShow()
+
+    {
+      if (this.__licationHide) {
+        getLastTime();
+        var time = getResidenceTime('app');
+        if (time.overtime) {
+          var options = {
+            path: this._lastPageRoute,
+            scene: this.statData.sc };
+
+          this._sendReportRequest(options);
+        }
+        this.__licationHide = false;
+      }
+    } }, { key: "_applicationHide", value: function _applicationHide(
+
+    self, type) {
+
+      this.__licationHide = true;
+      getLastTime();
+      var time = getResidenceTime();
+      getFirstTime();
+      var route = getPageRoute(this);
+      this._sendHideRequest({
+        urlref: route,
+        urlref_ts: time.residenceTime },
+      type);
+    } }, { key: "_pageShow", value: function _pageShow()
+
+    {
+      var route = getPageRoute(this);
+      var routepath = getRoute();
+      this._navigationBarTitle.config = PagesJson &&
+      PagesJson.pages[routepath] &&
+      PagesJson.pages[routepath].titleNView &&
+      PagesJson.pages[routepath].titleNView.titleText ||
+      PagesJson &&
+      PagesJson.pages[routepath] &&
+      PagesJson.pages[routepath].navigationBarTitleText || '';
+
+      if (this.__licationShow) {
+        getFirstTime();
+        this.__licationShow = false;
+        // console.log('这是 onLauch 之后执行的第一次 pageShow ，为下次记录时间做准备');
+        this._lastPageRoute = route;
+        return;
+      }
+
+      getLastTime();
+      this._lastPageRoute = route;
+      var time = getResidenceTime('page');
+      if (time.overtime) {
+        var options = {
+          path: this._lastPageRoute,
+          scene: this.statData.sc };
+
+        this._sendReportRequest(options);
+      }
+      getFirstTime();
+    } }, { key: "_pageHide", value: function _pageHide()
+
+    {
+      if (!this.__licationHide) {
+        getLastTime();
+        var time = getResidenceTime('page');
+        this._sendPageRequest({
+          url: this._lastPageRoute,
+          urlref: this._lastPageRoute,
+          urlref_ts: time.residenceTime });
+
+        this._navigationBarTitle = {
+          config: '',
+          page: '',
+          report: '',
+          lt: '' };
+
+        return;
+      }
+    } }, { key: "_login", value: function _login()
+
+    {
+      this._sendEventRequest({
+        key: 'login' },
+      0);
+    } }, { key: "_share", value: function _share()
+
+    {
+      this._sendEventRequest({
+        key: 'share' },
+      0);
+    } }, { key: "_payment", value: function _payment(
+    key) {
+      this._sendEventRequest({
+        key: key },
+      0);
+    } }, { key: "_sendReportRequest", value: function _sendReportRequest(
+    options) {
+
+      this._navigationBarTitle.lt = '1';
+      var query = options.query && JSON.stringify(options.query) !== '{}' ? '?' + JSON.stringify(options.query) : '';
+      this.statData.lt = '1';
+      this.statData.url = options.path + query || '';
+      this.statData.t = getTime();
+      this.statData.sc = getScene(options.scene);
+      this.statData.fvts = getFirstVisitTime();
+      this.statData.lvts = getLastVisitTime();
+      this.statData.tvc = getTotalVisitCount();
+      if (getPlatformName() === 'n') {
+        this.getProperty();
+      } else {
+        this.getNetworkInfo();
+      }
+    } }, { key: "_sendPageRequest", value: function _sendPageRequest(
+
+    opt) {var
+
+      url =
+
+
+      opt.url,urlref = opt.urlref,urlref_ts = opt.urlref_ts;
+      this._navigationBarTitle.lt = '11';
+      var options = {
+        ak: this.statData.ak,
+        uuid: this.statData.uuid,
+        lt: '11',
+        ut: this.statData.ut,
+        url: url,
+        tt: this.statData.tt,
+        urlref: urlref,
+        urlref_ts: urlref_ts,
+        ch: this.statData.ch,
+        usv: this.statData.usv,
+        t: getTime(),
+        p: this.statData.p };
+
+      this.request(options);
+    } }, { key: "_sendHideRequest", value: function _sendHideRequest(
+
+    opt, type) {var
+
+      urlref =
+
+      opt.urlref,urlref_ts = opt.urlref_ts;
+      var options = {
+        ak: this.statData.ak,
+        uuid: this.statData.uuid,
+        lt: '3',
+        ut: this.statData.ut,
+        urlref: urlref,
+        urlref_ts: urlref_ts,
+        ch: this.statData.ch,
+        usv: this.statData.usv,
+        t: getTime(),
+        p: this.statData.p };
+
+      this.request(options, type);
+    } }, { key: "_sendEventRequest", value: function _sendEventRequest()
+
+
+
+    {var _ref = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {},_ref$key = _ref.key,key = _ref$key === void 0 ? '' : _ref$key,_ref$value = _ref.value,value = _ref$value === void 0 ? "" : _ref$value;
+      var route = this._lastPageRoute;
+      var options = {
+        ak: this.statData.ak,
+        uuid: this.statData.uuid,
+        lt: '21',
+        ut: this.statData.ut,
+        url: route,
+        ch: this.statData.ch,
+        e_n: key,
+        e_v: typeof value === 'object' ? JSON.stringify(value) : value.toString(),
+        usv: this.statData.usv,
+        t: getTime(),
+        p: this.statData.p };
+
+      this.request(options);
+    } }, { key: "getNetworkInfo", value: function getNetworkInfo()
+
+    {var _this = this;
+      uni.getNetworkType({
+        success: function success(result) {
+          _this.statData.net = result.networkType;
+          _this.getLocation();
+        } });
+
+    } }, { key: "getProperty", value: function getProperty()
+
+    {var _this2 = this;
+      plus.runtime.getProperty(plus.runtime.appid, function (wgtinfo) {
+        _this2.statData.v = wgtinfo.version || '';
+        _this2.getNetworkInfo();
+      });
+    } }, { key: "getLocation", value: function getLocation()
+
+    {var _this3 = this;
+      if (statConfig.getLocation) {
+        uni.getLocation({
+          type: 'wgs84',
+          geocode: true,
+          success: function success(result) {
+            if (result.address) {
+              _this3.statData.cn = result.address.country;
+              _this3.statData.pn = result.address.province;
+              _this3.statData.ct = result.address.city;
+            }
+
+            _this3.statData.lat = result.latitude;
+            _this3.statData.lng = result.longitude;
+            _this3.request(_this3.statData);
+          } });
+
+      } else {
+        this.statData.lat = 0;
+        this.statData.lng = 0;
+        this.request(this.statData);
+      }
+    } }, { key: "request", value: function request(
+
+    data, type) {var _this4 = this;
+      var time = getTime();
+      var title = this._navigationBarTitle;
+      data.ttn = title.page;
+      data.ttpj = title.config;
+      data.ttc = title.report;
+
+      var requestData = this._reportingRequestData;
+      if (getPlatformName() === 'n') {
+        requestData = uni.getStorageSync('__UNI__STAT__DATA') || {};
+      }
+      if (!requestData[data.lt]) {
+        requestData[data.lt] = [];
+      }
+      requestData[data.lt].push(data);
+
+      if (getPlatformName() === 'n') {
+        uni.setStorageSync('__UNI__STAT__DATA', requestData);
+      }
+      if (getPageResidenceTime() < OPERATING_TIME && !type) {
+        return;
+      }
+      var uniStatData = this._reportingRequestData;
+      if (getPlatformName() === 'n') {
+        uniStatData = uni.getStorageSync('__UNI__STAT__DATA');
+      }
+      // 时间超过，重新获取时间戳
+      setPageResidenceTime();
+      var firstArr = [];
+      var contentArr = [];
+      var lastArr = [];var _loop = function _loop(
+
+      i) {
+        var rd = uniStatData[i];
+        rd.forEach(function (elm) {
+          var newData = getSplicing(elm);
+          if (i === 0) {
+            firstArr.push(newData);
+          } else if (i === 3) {
+            lastArr.push(newData);
+          } else {
+            contentArr.push(newData);
+          }
+        });};for (var i in uniStatData) {_loop(i);
+      }
+
+      firstArr.push.apply(firstArr, contentArr.concat(lastArr));
+      var optionsData = {
+        usv: STAT_VERSION, //统计 SDK 版本号
+        t: time, //发送请求时的时间戮
+        requests: JSON.stringify(firstArr) };
+
+
+      this._reportingRequestData = {};
+      if (getPlatformName() === 'n') {
+        uni.removeStorageSync('__UNI__STAT__DATA');
+      }
+
+      if (data.ut === 'h5') {
+        this.imageRequest(optionsData);
+        return;
+      }
+
+      if (getPlatformName() === 'n' && this.statData.p === 'a') {
+        setTimeout(function () {
+          _this4._sendRequest(optionsData);
+        }, 200);
+        return;
+      }
+      this._sendRequest(optionsData);
+    } }, { key: "_sendRequest", value: function _sendRequest(
+    optionsData) {var _this5 = this;
+      uni.request({
+        url: STAT_URL,
+        method: 'POST',
+        // header: {
+        //   'content-type': 'application/json' // 默认值
+        // },
+        data: optionsData,
+        success: function success() {
+          // if (process.env.NODE_ENV === 'development') {
+          //   console.log('stat request success');
+          // }
+        },
+        fail: function fail(e) {
+          if (++_this5._retry < 3) {
+            setTimeout(function () {
+              _this5._sendRequest(optionsData);
+            }, 1000);
+          }
+        } });
+
+    }
+    /**
+       * h5 请求
+       */ }, { key: "imageRequest", value: function imageRequest(
+    data) {
+      var image = new Image();
+      var options = getSgin(GetEncodeURIComponentOptions(data)).options;
+      image.src = STAT_H5_URL + '?' + options;
+    } }, { key: "sendEvent", value: function sendEvent(
+
+    key, value) {
+      // 校验 type 参数
+      if (calibration(key, value)) return;
+
+      if (key === 'title') {
+        this._navigationBarTitle.report = value;
+        return;
+      }
+      this._sendEventRequest({
+        key: key,
+        value: typeof value === 'object' ? JSON.stringify(value) : value },
+      1);
+    } }]);return Util;}();var
+
+
+
+Stat = /*#__PURE__*/function (_Util) {_inherits(Stat, _Util);var _super = _createSuper(Stat);_createClass(Stat, null, [{ key: "getInstance", value: function getInstance()
+    {
+      if (!this.instance) {
+        this.instance = new Stat();
+      }
+      return this.instance;
+    } }]);
+  function Stat() {var _this6;_classCallCheck(this, Stat);
+    _this6 = _super.call(this);
+    _this6.instance = null;
+    // 注册拦截器
+    if (typeof uni.addInterceptor === 'function' && "development" !== 'development') {
+      _this6.addInterceptorInit();
+      _this6.interceptLogin();
+      _this6.interceptShare(true);
+      _this6.interceptRequestPayment();
+    }return _this6;
+  }_createClass(Stat, [{ key: "addInterceptorInit", value: function addInterceptorInit()
+
+    {
+      var self = this;
+      uni.addInterceptor('setNavigationBarTitle', {
+        invoke: function invoke(args) {
+          self._navigationBarTitle.page = args.title;
+        } });
+
+    } }, { key: "interceptLogin", value: function interceptLogin()
+
+    {
+      var self = this;
+      uni.addInterceptor('login', {
+        complete: function complete() {
+          self._login();
+        } });
+
+    } }, { key: "interceptShare", value: function interceptShare(
+
+    type) {
+      var self = this;
+      if (!type) {
+        self._share();
+        return;
+      }
+      uni.addInterceptor('share', {
+        success: function success() {
+          self._share();
+        },
+        fail: function fail() {
+          self._share();
+        } });
+
+    } }, { key: "interceptRequestPayment", value: function interceptRequestPayment()
+
+    {
+      var self = this;
+      uni.addInterceptor('requestPayment', {
+        success: function success() {
+          self._payment('pay_success');
+        },
+        fail: function fail() {
+          self._payment('pay_fail');
+        } });
+
+    } }, { key: "report", value: function report(
+
+    options, self) {
+      this.self = self;
+      // if (process.env.NODE_ENV === 'development') {
+      //   console.log('report init');
+      // }
+      setPageResidenceTime();
+      this.__licationShow = true;
+      this._sendReportRequest(options, true);
+    } }, { key: "load", value: function load(
+
+    options, self) {
+      if (!self.$scope && !self.$mp) {
+        var page = getCurrentPages();
+        self.$scope = page[page.length - 1];
+      }
+      this.self = self;
+      this._query = options;
+    } }, { key: "show", value: function show(
+
+    self) {
+      this.self = self;
+      if (getPageTypes(self)) {
+        this._pageShow(self);
+      } else {
+        this._applicationShow(self);
+      }
+    } }, { key: "ready", value: function ready(
+
+    self) {
+      // this.self = self;
+      // if (getPageTypes(self)) {
+      //   this._pageShow(self);
+      // }
+    } }, { key: "hide", value: function hide(
+    self) {
+      this.self = self;
+      if (getPageTypes(self)) {
+        this._pageHide(self);
+      } else {
+        this._applicationHide(self, true);
+      }
+    } }, { key: "error", value: function error(
+    em) {
+      if (this._platform === 'devtools') {
+        if (true) {
+          console.info('当前运行环境为开发者工具，不上报数据。');
+        }
+        // return;
+      }
+      var emVal = '';
+      if (!em.message) {
+        emVal = JSON.stringify(em);
+      } else {
+        emVal = em.stack;
+      }
+      var options = {
+        ak: this.statData.ak,
+        uuid: this.statData.uuid,
+        lt: '31',
+        ut: this.statData.ut,
+        ch: this.statData.ch,
+        mpsdk: this.statData.mpsdk,
+        mpv: this.statData.mpv,
+        v: this.statData.v,
+        em: emVal,
+        usv: this.statData.usv,
+        t: getTime(),
+        p: this.statData.p };
+
+      this.request(options);
+    } }]);return Stat;}(Util);
+
+
+var stat = Stat.getInstance();
+var isHide = false;
+var lifecycle = {
+  onLaunch: function onLaunch(options) {
+    stat.report(options, this);
+  },
+  onReady: function onReady() {
+    stat.ready(this);
+  },
+  onLoad: function onLoad(options) {
+    stat.load(options, this);
+    // 重写分享，获取分享上报事件
+    if (this.$scope && this.$scope.onShareAppMessage) {
+      var oldShareAppMessage = this.$scope.onShareAppMessage;
+      this.$scope.onShareAppMessage = function (options) {
+        stat.interceptShare(false);
+        return oldShareAppMessage.call(this, options);
+      };
+    }
+  },
+  onShow: function onShow() {
+    isHide = false;
+    stat.show(this);
+  },
+  onHide: function onHide() {
+    isHide = true;
+    stat.hide(this);
+  },
+  onUnload: function onUnload() {
+    if (isHide) {
+      isHide = false;
+      return;
+    }
+    stat.hide(this);
+  },
+  onError: function onError(e) {
+    stat.error(e);
+  } };
+
+
+function main() {
+  if (true) {
+    uni.report = function (type, options) {};
+  } else { var Vue; }
+}
+
+main();
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./node_modules/@dcloudio/uni-mp-weixin/dist/index.js */ 1)["default"]))
+
+/***/ }),
+/* 6 */
+/*!******************************************************!*\
+  !*** ./node_modules/@dcloudio/uni-stat/package.json ***!
+  \******************************************************/
+/*! exports provided: _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _shasum, _spec, _where, author, bugs, bundleDependencies, deprecated, description, devDependencies, files, gitHead, homepage, license, main, name, repository, scripts, version, default */
+/***/ (function(module) {
+
+module.exports = {"_from":"@dcloudio/uni-stat@next","_id":"@dcloudio/uni-stat@2.0.0-261120200409001","_inBundle":false,"_integrity":"sha512-iM1vsCzUEg80lCM7rSAkh+28ahjS9zQgiGsEoHxawCD9s7rTFnSRIaOuc7WHeQt6EclGUUIrMccYHXsLsNAXZg==","_location":"/@dcloudio/uni-stat","_phantomChildren":{},"_requested":{"type":"tag","registry":true,"raw":"@dcloudio/uni-stat@next","name":"@dcloudio/uni-stat","escapedName":"@dcloudio%2funi-stat","scope":"@dcloudio","rawSpec":"next","saveSpec":null,"fetchSpec":"next"},"_requiredBy":["#USER","/","/@dcloudio/vue-cli-plugin-uni"],"_resolved":"https://registry.npmjs.org/@dcloudio/uni-stat/-/uni-stat-2.0.0-261120200409001.tgz","_shasum":"e9daeef120f133bf3d4ca0505f5b2abed0e874a7","_spec":"@dcloudio/uni-stat@next","_where":"/Users/guoshengqiang/Documents/dcloud-plugins/release/uniapp-cli","author":"","bugs":{"url":"https://github.com/dcloudio/uni-app/issues"},"bundleDependencies":false,"deprecated":false,"description":"","devDependencies":{"@babel/core":"^7.5.5","@babel/preset-env":"^7.5.5","eslint":"^6.1.0","rollup":"^1.19.3","rollup-plugin-babel":"^4.3.3","rollup-plugin-clear":"^2.0.7","rollup-plugin-commonjs":"^10.0.2","rollup-plugin-copy":"^3.1.0","rollup-plugin-eslint":"^7.0.0","rollup-plugin-json":"^4.0.0","rollup-plugin-node-resolve":"^5.2.0","rollup-plugin-replace":"^2.2.0","rollup-plugin-uglify":"^6.0.2"},"files":["dist","package.json","LICENSE"],"gitHead":"ff0877f516c1cc986cf2d7eae2bf5030c58050f9","homepage":"https://github.com/dcloudio/uni-app#readme","license":"Apache-2.0","main":"dist/index.js","name":"@dcloudio/uni-stat","repository":{"type":"git","url":"git+https://github.com/dcloudio/uni-app.git","directory":"packages/uni-stat"},"scripts":{"build":"NODE_ENV=production rollup -c rollup.config.js","dev":"NODE_ENV=development rollup -w -c rollup.config.js"},"version":"2.0.0-261120200409001"};
+
+/***/ }),
+/* 7 */
+/*!********************************************************************!*\
+  !*** D:/test/mobile/chatRoom/chatRoom/pages.json?{"type":"style"} ***!
+  \********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = { "pages": { "pages/signup/signup": { "navigationStyle": "custom", "usingComponents": {}, "usingAutoImportComponents": {} }, "pages/index/index": { "navigationStyle": "custom", "enablePullDownRefresh": true, "usingComponents": {}, "usingAutoImportComponents": {} }, "pages/chatroom/chatroom": { "navigationStyle": "custom", "enablePullDownRefresh": true, "usingComponents": { "submit": "/components/submit/submit" }, "usingAutoImportComponents": { "submit": "/components/submit/submit" } }, "pages/friendrequest/friendrequest": { "navigationStyle": "custom", "usingComponents": {}, "usingAutoImportComponents": {} }, "pages/userdeatils/userdeatils": { "navigationStyle": "custom", "usingComponents": { "image-cropper": "/components/ling-imgcropper/ling-imgcropper" }, "usingAutoImportComponents": {} }, "pages/userhome/userhome": { "navigationStyle": "custom", "usingComponents": {}, "usingAutoImportComponents": {} }, "pages/search/search": { "navigationStyle": "custom", "usingComponents": {}, "usingAutoImportComponents": {} }, "pages/signin/signin": { "navigationStyle": "custom", "usingComponents": {}, "usingAutoImportComponents": {} }, "pages/test/test": { "usingComponents": {}, "usingAutoImportComponents": {} } }, "globalStyle": { "navigationBarTextStyle": "black", "navigationBarTitleText": "uni-app", "navigationBarBackgroundColor": "#F8F8F8", "backgroundColor": "#F8F8F8" } };exports.default = _default;
+
+/***/ }),
+/* 8 */
+/*!*******************************************************************!*\
+  !*** D:/test/mobile/chatRoom/chatRoom/pages.json?{"type":"stat"} ***!
+  \*******************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _default = { "appid": "" };exports.default = _default;
+
+/***/ }),
 /* 9 */,
-/* 10 */
+/* 10 */,
+/* 11 */,
+/* 12 */,
+/* 13 */,
+/* 14 */
 /*!**********************************************************************************************************!*\
   !*** ./node_modules/@dcloudio/vue-cli-plugin-uni/packages/vue-loader/lib/runtime/componentNormalizer.js ***!
   \**********************************************************************************************************/
@@ -7799,10 +8674,10 @@ function normalizeComponent (
 
 
 /***/ }),
-/* 11 */
-/*!****************************************************************!*\
-  !*** F:/uni-app/chatRoom/components/socket/weapp.socket.io.js ***!
-  \****************************************************************/
+/* 15 */
+/*!*****************************************************************************!*\
+  !*** D:/test/mobile/chatRoom/chatRoom/components/socket/weapp.socket.io.js ***!
+  \*****************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -7818,16 +8693,24 @@ function ownKeys(object, enumerableOnly) {var keys = Object.keys(object);if (Obj
     var r,n,o,i = String.fromCharCode;function s(t) {for (var e, r, n = [], o = 0, i = t.length; o < i;) {(e = t.charCodeAt(o++)) >= 55296 && e <= 56319 && o < i ? 56320 == (64512 & (r = t.charCodeAt(o++))) ? n.push(((1023 & e) << 10) + (1023 & r) + 65536) : (n.push(e), o--) : n.push(e);}return n;}function a(t, e) {if (t >= 55296 && t <= 57343) {if (e) throw Error("Lone surrogate U+" + t.toString(16).toUpperCase() + " is not a scalar value");return !1;}return !0;}function c(t, e) {return i(t >> e & 63 | 128);}function h(t, e) {if (0 == (4294967168 & t)) return i(t);var r = "";return 0 == (4294965248 & t) ? r = i(t >> 6 & 31 | 192) : 0 == (4294901760 & t) ? (a(t, e) || (t = 65533), r = i(t >> 12 & 15 | 224), r += c(t, 6)) : 0 == (4292870144 & t) && (r = i(t >> 18 & 7 | 240), r += c(t, 12), r += c(t, 6)), r += i(63 & t | 128);}function u() {if (o >= n) throw Error("Invalid byte index");var t = 255 & r[o];if (o++, 128 == (192 & t)) return 63 & t;throw Error("Invalid continuation byte");}function f(t) {var e, i;if (o > n) throw Error("Invalid byte index");if (o == n) return !1;if (e = 255 & r[o], o++, 0 == (128 & e)) return e;if (192 == (224 & e)) {if ((i = (31 & e) << 6 | u()) >= 128) return i;throw Error("Invalid continuation byte");}if (224 == (240 & e)) {if ((i = (15 & e) << 12 | u() << 6 | u()) >= 2048) return a(i, t) ? i : 65533;throw Error("Invalid continuation byte");}if (240 == (248 & e) && (i = (7 & e) << 18 | u() << 12 | u() << 6 | u()) >= 65536 && i <= 1114111) return i;throw Error("Invalid UTF-8 detected");}t.exports = { version: "2.1.2", encode: function encode(t, e) {for (var r = !1 !== (e = e || {}).strict, n = s(t), o = n.length, i = -1, a = ""; ++i < o;) {a += h(n[i], r);}return a;}, decode: function decode(t, e) {var a = !1 !== (e = e || {}).strict;r = s(t), n = r.length, o = 0;for (var c, h = []; !1 !== (c = f(a));) {h.push(c);}return function (t) {for (var e, r = t.length, n = -1, o = ""; ++n < r;) {(e = t[n]) > 65535 && (o += i((e -= 65536) >>> 10 & 1023 | 55296), e = 56320 | 1023 & e), o += i(e);}return o;}(h);} };}, function (t, e) {!function () {"use strict";for (var t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/", r = new Uint8Array(256), n = 0; n < t.length; n++) {r[t.charCodeAt(n)] = n;}e.encode = function (e) {var r,n = new Uint8Array(e),o = n.length,i = "";for (r = 0; r < o; r += 3) {i += t[n[r] >> 2], i += t[(3 & n[r]) << 4 | n[r + 1] >> 4], i += t[(15 & n[r + 1]) << 2 | n[r + 2] >> 6], i += t[63 & n[r + 2]];}return o % 3 == 2 ? i = i.substring(0, i.length - 1) + "=" : o % 3 == 1 && (i = i.substring(0, i.length - 2) + "=="), i;}, e.decode = function (t) {var e,n,o,i,s,a = .75 * t.length,c = t.length,h = 0;"=" === t[t.length - 1] && (a--, "=" === t[t.length - 2] && a--);var u = new ArrayBuffer(a),f = new Uint8Array(u);for (e = 0; e < c; e += 4) {n = r[t.charCodeAt(e)], o = r[t.charCodeAt(e + 1)], i = r[t.charCodeAt(e + 2)], s = r[t.charCodeAt(e + 3)], f[h++] = n << 2 | o >> 4, f[h++] = (15 & o) << 4 | i >> 2, f[h++] = (3 & i) << 6 | 63 & s;}return u;};}();}, function (t, e) {var r = void 0 !== r ? r : "undefined" != typeof WebKitBlobBuilder ? WebKitBlobBuilder : "undefined" != typeof MSBlobBuilder ? MSBlobBuilder : "undefined" != typeof MozBlobBuilder && MozBlobBuilder,n = function () {try {return 2 === new Blob(["hi"]).size;} catch (t) {return !1;}}(),o = n && function () {try {return 2 === new Blob([new Uint8Array([1, 2])]).size;} catch (t) {return !1;}}(),i = r && r.prototype.append && r.prototype.getBlob;function s(t) {return t.map(function (t) {if (t.buffer instanceof ArrayBuffer) {var e = t.buffer;if (t.byteLength !== e.byteLength) {var r = new Uint8Array(t.byteLength);r.set(new Uint8Array(e, t.byteOffset, t.byteLength)), e = r.buffer;}return e;}return t;});}function a(t, e) {e = e || {};var n = new r();return s(t).forEach(function (t) {n.append(t);}), e.type ? n.getBlob(e.type) : n.getBlob();}function c(t, e) {return new Blob(s(t), e || {});}"undefined" != typeof Blob && (a.prototype = Blob.prototype, c.prototype = Blob.prototype), t.exports = n ? o ? Blob : c : i ? a : void 0;}, function (t, e) {t.exports = function (t, e) {var r = function r() {};r.prototype = e.prototype, t.prototype = new r(), t.prototype.constructor = t;};}, function (t, e, r) {"use strict";var n,o = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_".split(""),i = {},s = 0,a = 0;function c(t) {var e = "";do {e = o[t % 64] + e, t = Math.floor(t / 64);} while (t > 0);return e;}function h() {var t = c(+new Date());return t !== n ? (s = 0, n = t) : t + "." + c(s++);}for (; a < 64; a++) {i[o[a]] = a;}h.encode = c, h.decode = function (t) {var e = 0;for (a = 0; a < t.length; a++) {e = 64 * e + i[t.charAt(a)];}return e;}, t.exports = h;}, function (t, e, r) {var n = r(38),_r = r(39),o = _r.URL,_r2 = r(46),i = _r2.addEventListener,s = _r2.removeEventListener,a = r(47),c = r(0)("wx-ws:wx-ws"),h = ["nodebuffer", "arraybuffer"],u = ["CONNECTING", "OPEN", "CLOSING", "CLOSED"];var f = /*#__PURE__*/function (_n) {"use strict";_inherits(f, _n);var _super = _createSuper(f);function f(t, e, r) {var _this;_classCallCheck(this, f);_this = _super.call(this), c("constructor: ", t, e, r), _this.readyState = f.CONNECTING, _this.protocol = "", _this._closeCode = 1006, _this._closeMessage = "", _this._binaryType = h[0], _this._socket = null, _this.supports = { binary: !0 }, null !== t && (_this._bufferedAmount = 0, _this._redirects = 0, "object" == typeof e && null !== e && (r = e, e = void 0), function (t, e, r, n) {var o = _objectSpread({ maxPayload: 104857600, perMessageDeflate: !0 }, n);c("initAsClient: opts: ", o), t.url = e;var i = function (t, e) {c("start create conn: ", t);var r = wx.connectSocket(t);if (r) return r;return { onClose: wx.onSocketClose, onOpen: wx.onSocketOpen, onError: wx.onSocketError, onMessage: wx.onSocketMessage, send: wx.sendSocketMessage, close: wx.closeSocket };}({ url: t.url, header: o.headers, protocols: r, perMessageDeflate: !!o.perMessageDeflate, tcpNoDelay: !!o.tcpNoDelay });t.setSocket(i);}(_assertThisInitialized(_this), t, e, r));return _this;}_createClass(f, [{ key: "setSocket", value: function setSocket(t, e) {var _this2 = this;this._socket = t, this._sender = new a(t), c("set socket: socket =", t, ", head =", e, ", this: ", this), this._socket.onOpen(function (t) {c("socket onopen: ", t), _this2.readyState = f.OPEN, _this2.emit("open", t);}), this._socket.onClose(function (t) {c("socket onclose: ", t), _this2._closeCode = t.code, _this2._closeMessage = t.reason, _this2.emitClose();}), this._socket.onError(function (t) {c("socket onerror: ", t), _this2.emit("error", t);}), this._socket.onMessage(function (t) {c("socket onmessage: ", t, _this2), _this2.emit("message", t.data);});} }, { key: "emitClose", value: function emitClose() {this.readyState = f.CLOSED, this.removeEventListener(), this.emit("close", this._closeCode, this._closeMessage);} }, { key: "send", value: function send(t, e, r) {if (c("socket send msg: ", t, this.readyState, ", sender: ", this._sender), this.readyState === f.CONNECTING) throw new Error("WebSocket is not open: readyState 0 (CONNECTING)");if ("number" == typeof t && (t = t.toString()), this.readyState === f.OPEN) this._sender.send(t, e, r);else if (r) {r(new Error("WebSocket is not open: readyState ".concat(this.readyState, " ") + "(".concat(u[this.readyState], ")")));}} }, { key: "close", value: function close(t, e) {var _this3 = this;if (c("closing connection: ", this.readyState), this.readyState !== f.CLOSED) {if (this.readyState === f.CONNECTING) {throw new Error("WebSocket was closed before the connection was established");}this.readyState !== f.CLOSING && (this.readyState = f.CLOSING, this._socket.close({ code: t, reason: e, success: function success() {c("connection closed..."), _this3.readyState = f.CLOSED, _this3._socket = null;} }));}} }, { key: "CONNECTING", get: function get() {return f.CONNECTING;} }, { key: "CLOSING", get: function get() {return f.CLOSING;} }, { key: "CLOSED", get: function get() {return f.CLOSED;} }, { key: "OPEN", get: function get() {return f.OPEN;} }, { key: "bufferedAmount", get: function get() {return this._socket ? (this._socket.bufferSize || 0) + this._sender._bufferedBytes : this._bufferedAmount;} }, { key: "binaryType", get: function get() {return this._binaryType;}, set: function set(t) {c("set binaryType: ", t), h.includes(t) && (this._binaryType = t);} }]);return f;}(n);u.forEach(function (t, e) {f[t] = e;}), ["open", "error", "close", "message"].forEach(function (t) {Object.defineProperty(f.prototype, "on".concat(t), { get: function get() {var e = this.listeners(t);for (var _t = 0; _t < e.length; _t++) {if (e[_t]._listener) return e[_t]._listener;}}, set: function set(e) {var r = this.listeners(t);for (var _e = 0; _e < r.length; _e++) {r[_e]._listener && this.removeListener(t, r[_e]);}this.addEventListener(t, e);} });}), f.prototype.addEventListener = i, f.prototype.removeEventListener = s, t.exports = f;}, function (t, e, r) {"use strict";var n,o = "object" == typeof Reflect ? Reflect : null,i = o && "function" == typeof o.apply ? o.apply : function (t, e, r) {return Function.prototype.apply.call(t, e, r);};n = o && "function" == typeof o.ownKeys ? o.ownKeys : Object.getOwnPropertySymbols ? function (t) {return Object.getOwnPropertyNames(t).concat(Object.getOwnPropertySymbols(t));} : function (t) {return Object.getOwnPropertyNames(t);};var s = Number.isNaN || function (t) {return t != t;};function a() {a.init.call(this);}t.exports = a, a.EventEmitter = a, a.prototype._events = void 0, a.prototype._eventsCount = 0, a.prototype._maxListeners = void 0;var c = 10;function h(t) {if ("function" != typeof t) throw new TypeError('The "listener" argument must be of type Function. Received type ' + typeof t);}function u(t) {return void 0 === t._maxListeners ? a.defaultMaxListeners : t._maxListeners;}function f(t, e, r, n) {var o, i, s, a;if (h(r), void 0 === (i = t._events) ? (i = t._events = Object.create(null), t._eventsCount = 0) : (void 0 !== i.newListener && (t.emit("newListener", e, r.listener ? r.listener : r), i = t._events), s = i[e]), void 0 === s) s = i[e] = r, ++t._eventsCount;else if ("function" == typeof s ? s = i[e] = n ? [r, s] : [s, r] : n ? s.unshift(r) : s.push(r), (o = u(t)) > 0 && s.length > o && !s.warned) {s.warned = !0;var c = new Error("Possible EventEmitter memory leak detected. " + s.length + " " + String(e) + " listeners added. Use emitter.setMaxListeners() to increase limit");c.name = "MaxListenersExceededWarning", c.emitter = t, c.type = e, c.count = s.length, a = c, console && console.warn && console.warn(a);}return t;}function p() {if (!this.fired) return this.target.removeListener(this.type, this.wrapFn), this.fired = !0, 0 === arguments.length ? this.listener.call(this.target) : this.listener.apply(this.target, arguments);}function l(t, e, r) {var n = { fired: !1, wrapFn: void 0, target: t, type: e, listener: r },o = p.bind(n);return o.listener = r, n.wrapFn = o, o;}function d(t, e, r) {var n = t._events;if (void 0 === n) return [];var o = n[e];return void 0 === o ? [] : "function" == typeof o ? r ? [o.listener || o] : [o] : r ? function (t) {for (var e = new Array(t.length), r = 0; r < e.length; ++r) {e[r] = t[r].listener || t[r];}return e;}(o) : g(o, o.length);}function y(t) {var e = this._events;if (void 0 !== e) {var r = e[t];if ("function" == typeof r) return 1;if (void 0 !== r) return r.length;}return 0;}function g(t, e) {for (var r = new Array(e), n = 0; n < e; ++n) {r[n] = t[n];}return r;}Object.defineProperty(a, "defaultMaxListeners", { enumerable: !0, get: function get() {return c;}, set: function set(t) {if ("number" != typeof t || t < 0 || s(t)) throw new RangeError('The value of "defaultMaxListeners" is out of range. It must be a non-negative number. Received ' + t + ".");c = t;} }), a.init = function () {void 0 !== this._events && this._events !== Object.getPrototypeOf(this)._events || (this._events = Object.create(null), this._eventsCount = 0), this._maxListeners = this._maxListeners || void 0;}, a.prototype.setMaxListeners = function (t) {if ("number" != typeof t || t < 0 || s(t)) throw new RangeError('The value of "n" is out of range. It must be a non-negative number. Received ' + t + ".");return this._maxListeners = t, this;}, a.prototype.getMaxListeners = function () {return u(this);}, a.prototype.emit = function (t) {for (var e = [], r = 1; r < arguments.length; r++) {e.push(arguments[r]);}var n = "error" === t,o = this._events;if (void 0 !== o) n = n && void 0 === o.error;else if (!n) return !1;if (n) {var s;if (e.length > 0 && (s = e[0]), s instanceof Error) throw s;var a = new Error("Unhandled error." + (s ? " (" + s.message + ")" : ""));throw a.context = s, a;}var c = o[t];if (void 0 === c) return !1;if ("function" == typeof c) i(c, this, e);else {var h = c.length,u = g(c, h);for (r = 0; r < h; ++r) {i(u[r], this, e);}}return !0;}, a.prototype.addListener = function (t, e) {return f(this, t, e, !1);}, a.prototype.on = a.prototype.addListener, a.prototype.prependListener = function (t, e) {return f(this, t, e, !0);}, a.prototype.once = function (t, e) {return h(e), this.on(t, l(this, t, e)), this;}, a.prototype.prependOnceListener = function (t, e) {return h(e), this.prependListener(t, l(this, t, e)), this;}, a.prototype.removeListener = function (t, e) {var r, n, o, i, s;if (h(e), void 0 === (n = this._events)) return this;if (void 0 === (r = n[t])) return this;if (r === e || r.listener === e) 0 == --this._eventsCount ? this._events = Object.create(null) : (delete n[t], n.removeListener && this.emit("removeListener", t, r.listener || e));else if ("function" != typeof r) {for (o = -1, i = r.length - 1; i >= 0; i--) {if (r[i] === e || r[i].listener === e) {s = r[i].listener, o = i;break;}}if (o < 0) return this;0 === o ? r.shift() : function (t, e) {for (; e + 1 < t.length; e++) {t[e] = t[e + 1];}t.pop();}(r, o), 1 === r.length && (n[t] = r[0]), void 0 !== n.removeListener && this.emit("removeListener", t, s || e);}return this;}, a.prototype.off = a.prototype.removeListener, a.prototype.removeAllListeners = function (t) {var e, r, n;if (void 0 === (r = this._events)) return this;if (void 0 === r.removeListener) return 0 === arguments.length ? (this._events = Object.create(null), this._eventsCount = 0) : void 0 !== r[t] && (0 == --this._eventsCount ? this._events = Object.create(null) : delete r[t]), this;if (0 === arguments.length) {var o,i = Object.keys(r);for (n = 0; n < i.length; ++n) {"removeListener" !== (o = i[n]) && this.removeAllListeners(o);}return this.removeAllListeners("removeListener"), this._events = Object.create(null), this._eventsCount = 0, this;}if ("function" == typeof (e = r[t])) this.removeListener(t, e);else if (void 0 !== e) for (n = e.length - 1; n >= 0; n--) {this.removeListener(t, e[n]);}return this;}, a.prototype.listeners = function (t) {return d(this, t, !0);}, a.prototype.rawListeners = function (t) {return d(this, t, !1);}, a.listenerCount = function (t, e) {return "function" == typeof t.listenerCount ? t.listenerCount(e) : y.call(t, e);}, a.prototype.listenerCount = y, a.prototype.eventNames = function () {return this._eventsCount > 0 ? n(this._events) : [];};}, function (t, e, r) {"use strict";var n = r(40),o = r(42);function i() {this.protocol = null, this.slashes = null, this.auth = null, this.host = null, this.port = null, this.hostname = null, this.hash = null, this.search = null, this.query = null, this.pathname = null, this.path = null, this.href = null;}e.parse = b, e.resolve = function (t, e) {return b(t, !1, !0).resolve(e);}, e.resolveObject = function (t, e) {return t ? b(t, !1, !0).resolveObject(e) : e;}, e.format = function (t) {o.isString(t) && (t = b(t));return t instanceof i ? t.format() : i.prototype.format.call(t);}, e.Url = i;var s = /^([a-z0-9.+-]+:)/i,a = /:[0-9]*$/,c = /^(\/\/?(?!\/)[^\?\s]*)(\?[^\s]*)?$/,h = ["{", "}", "|", "\\", "^", "`"].concat(["<", ">", '"', "`", " ", "\r", "\n", "\t"]),u = ["'"].concat(h),f = ["%", "/", "?", ";", "#"].concat(u),p = ["/", "?", "#"],l = /^[+a-z0-9A-Z_-]{0,63}$/,d = /^([+a-z0-9A-Z_-]{0,63})(.*)$/,y = { javascript: !0, "javascript:": !0 },g = { javascript: !0, "javascript:": !0 },v = { http: !0, https: !0, ftp: !0, gopher: !0, file: !0, "http:": !0, "https:": !0, "ftp:": !0, "gopher:": !0, "file:": !0 },m = r(43);function b(t, e, r) {if (t && o.isObject(t) && t instanceof i) return t;var n = new i();return n.parse(t, e, r), n;}i.prototype.parse = function (t, e, r) {if (!o.isString(t)) throw new TypeError("Parameter 'url' must be a string, not " + typeof t);var i = t.indexOf("?"),a = -1 !== i && i < t.indexOf("#") ? "?" : "#",h = t.split(a);h[0] = h[0].replace(/\\/g, "/");var b = t = h.join(a);if (b = b.trim(), !r && 1 === t.split("#").length) {var w = c.exec(b);if (w) return this.path = b, this.href = b, this.pathname = w[1], w[2] ? (this.search = w[2], this.query = e ? m.parse(this.search.substr(1)) : this.search.substr(1)) : e && (this.search = "", this.query = {}), this;}var A = s.exec(b);if (A) {var k = (A = A[0]).toLowerCase();this.protocol = k, b = b.substr(A.length);}if (r || A || b.match(/^\/\/[^@\/]+@[^@\/]+/)) {var _ = "//" === b.substr(0, 2);!_ || A && g[A] || (b = b.substr(2), this.slashes = !0);}if (!g[A] && (_ || A && !v[A])) {for (var E, B, S = -1, C = 0; C < p.length; C++) {-1 !== (R = b.indexOf(p[C])) && (-1 === S || R < S) && (S = R);}-1 !== (B = -1 === S ? b.lastIndexOf("@") : b.lastIndexOf("@", S)) && (E = b.slice(0, B), b = b.slice(B + 1), this.auth = decodeURIComponent(E)), S = -1;for (C = 0; C < f.length; C++) {var R;-1 !== (R = b.indexOf(f[C])) && (-1 === S || R < S) && (S = R);}-1 === S && (S = b.length), this.host = b.slice(0, S), b = b.slice(S), this.parseHost(), this.hostname = this.hostname || "";var O = "[" === this.hostname[0] && "]" === this.hostname[this.hostname.length - 1];if (!O) for (var x = this.hostname.split(/\./), P = (C = 0, x.length); C < P; C++) {var T = x[C];if (T && !T.match(l)) {for (var N = "", L = 0, j = T.length; L < j; L++) {T.charCodeAt(L) > 127 ? N += "x" : N += T[L];}if (!N.match(l)) {var I = x.slice(0, C),U = x.slice(C + 1),M = T.match(d);M && (I.push(M[1]), U.unshift(M[2])), U.length && (b = "/" + U.join(".") + b), this.hostname = I.join(".");break;}}}this.hostname.length > 255 ? this.hostname = "" : this.hostname = this.hostname.toLowerCase(), O || (this.hostname = n.toASCII(this.hostname));var D = this.port ? ":" + this.port : "",q = this.hostname || "";this.host = q + D, this.href += this.host, O && (this.hostname = this.hostname.substr(1, this.hostname.length - 2), "/" !== b[0] && (b = "/" + b));}if (!y[k]) for (C = 0, P = u.length; C < P; C++) {var Y = u[C];if (-1 !== b.indexOf(Y)) {var F = encodeURIComponent(Y);F === Y && (F = escape(Y)), b = b.split(Y).join(F);}}var z = b.indexOf("#");-1 !== z && (this.hash = b.substr(z), b = b.slice(0, z));var W = b.indexOf("?");if (-1 !== W ? (this.search = b.substr(W), this.query = b.substr(W + 1), e && (this.query = m.parse(this.query)), b = b.slice(0, W)) : e && (this.search = "", this.query = {}), b && (this.pathname = b), v[k] && this.hostname && !this.pathname && (this.pathname = "/"), this.pathname || this.search) {D = this.pathname || "";var H = this.search || "";this.path = D + H;}return this.href = this.format(), this;}, i.prototype.format = function () {var t = this.auth || "";t && (t = (t = encodeURIComponent(t)).replace(/%3A/i, ":"), t += "@");var e = this.protocol || "",r = this.pathname || "",n = this.hash || "",i = !1,s = "";this.host ? i = t + this.host : this.hostname && (i = t + (-1 === this.hostname.indexOf(":") ? this.hostname : "[" + this.hostname + "]"), this.port && (i += ":" + this.port)), this.query && o.isObject(this.query) && Object.keys(this.query).length && (s = m.stringify(this.query));var a = this.search || s && "?" + s || "";return e && ":" !== e.substr(-1) && (e += ":"), this.slashes || (!e || v[e]) && !1 !== i ? (i = "//" + (i || ""), r && "/" !== r.charAt(0) && (r = "/" + r)) : i || (i = ""), n && "#" !== n.charAt(0) && (n = "#" + n), a && "?" !== a.charAt(0) && (a = "?" + a), e + i + (r = r.replace(/[?#]/g, function (t) {return encodeURIComponent(t);})) + (a = a.replace("#", "%23")) + n;}, i.prototype.resolve = function (t) {return this.resolveObject(b(t, !1, !0)).format();}, i.prototype.resolveObject = function (t) {if (o.isString(t)) {var e = new i();e.parse(t, !1, !0), t = e;}for (var r = new i(), n = Object.keys(this), s = 0; s < n.length; s++) {var a = n[s];r[a] = this[a];}if (r.hash = t.hash, "" === t.href) return r.href = r.format(), r;if (t.slashes && !t.protocol) {for (var c = Object.keys(t), h = 0; h < c.length; h++) {var u = c[h];"protocol" !== u && (r[u] = t[u]);}return v[r.protocol] && r.hostname && !r.pathname && (r.path = r.pathname = "/"), r.href = r.format(), r;}if (t.protocol && t.protocol !== r.protocol) {if (!v[t.protocol]) {for (var f = Object.keys(t), p = 0; p < f.length; p++) {var l = f[p];r[l] = t[l];}return r.href = r.format(), r;}if (r.protocol = t.protocol, t.host || g[t.protocol]) r.pathname = t.pathname;else {for (var d = (t.pathname || "").split("/"); d.length && !(t.host = d.shift());) {;}t.host || (t.host = ""), t.hostname || (t.hostname = ""), "" !== d[0] && d.unshift(""), d.length < 2 && d.unshift(""), r.pathname = d.join("/");}if (r.search = t.search, r.query = t.query, r.host = t.host || "", r.auth = t.auth, r.hostname = t.hostname || t.host, r.port = t.port, r.pathname || r.search) {var y = r.pathname || "",m = r.search || "";r.path = y + m;}return r.slashes = r.slashes || t.slashes, r.href = r.format(), r;}var b = r.pathname && "/" === r.pathname.charAt(0),w = t.host || t.pathname && "/" === t.pathname.charAt(0),A = w || b || r.host && t.pathname,k = A,_ = r.pathname && r.pathname.split("/") || [],E = (d = t.pathname && t.pathname.split("/") || [], r.protocol && !v[r.protocol]);if (E && (r.hostname = "", r.port = null, r.host && ("" === _[0] ? _[0] = r.host : _.unshift(r.host)), r.host = "", t.protocol && (t.hostname = null, t.port = null, t.host && ("" === d[0] ? d[0] = t.host : d.unshift(t.host)), t.host = null), A = A && ("" === d[0] || "" === _[0])), w) r.host = t.host || "" === t.host ? t.host : r.host, r.hostname = t.hostname || "" === t.hostname ? t.hostname : r.hostname, r.search = t.search, r.query = t.query, _ = d;else if (d.length) _ || (_ = []), _.pop(), _ = _.concat(d), r.search = t.search, r.query = t.query;else if (!o.isNullOrUndefined(t.search)) {if (E) r.hostname = r.host = _.shift(), (O = !!(r.host && r.host.indexOf("@") > 0) && r.host.split("@")) && (r.auth = O.shift(), r.host = r.hostname = O.shift());return r.search = t.search, r.query = t.query, o.isNull(r.pathname) && o.isNull(r.search) || (r.path = (r.pathname ? r.pathname : "") + (r.search ? r.search : "")), r.href = r.format(), r;}if (!_.length) return r.pathname = null, r.search ? r.path = "/" + r.search : r.path = null, r.href = r.format(), r;for (var B = _.slice(-1)[0], S = (r.host || t.host || _.length > 1) && ("." === B || ".." === B) || "" === B, C = 0, R = _.length; R >= 0; R--) {"." === (B = _[R]) ? _.splice(R, 1) : ".." === B ? (_.splice(R, 1), C++) : C && (_.splice(R, 1), C--);}if (!A && !k) for (; C--; C) {_.unshift("..");}!A || "" === _[0] || _[0] && "/" === _[0].charAt(0) || _.unshift(""), S && "/" !== _.join("/").substr(-1) && _.push("");var O,x = "" === _[0] || _[0] && "/" === _[0].charAt(0);E && (r.hostname = r.host = x ? "" : _.length ? _.shift() : "", (O = !!(r.host && r.host.indexOf("@") > 0) && r.host.split("@")) && (r.auth = O.shift(), r.host = r.hostname = O.shift()));return (A = A || r.host && _.length) && !x && _.unshift(""), _.length ? r.pathname = _.join("/") : (r.pathname = null, r.path = null), o.isNull(r.pathname) && o.isNull(r.search) || (r.path = (r.pathname ? r.pathname : "") + (r.search ? r.search : "")), r.auth = t.auth || r.auth, r.slashes = r.slashes || t.slashes, r.href = r.format(), r;}, i.prototype.parseHost = function () {var t = this.host,e = a.exec(t);e && (":" !== (e = e[0]) && (this.port = e.substr(1)), t = t.substr(0, t.length - e.length)), t && (this.hostname = t);};}, function (t, e, r) {(function (t, n) {var o; /*! https://mths.be/punycode v1.4.1 by @mathias */!function (i) {e && e.nodeType, t && t.nodeType;var s = "object" == typeof n && n;s.global !== s && s.window !== s && s.self;var a,c = 2147483647,h = /^xn--/,u = /[^\x20-\x7E]/,f = /[\x2E\u3002\uFF0E\uFF61]/g,p = { overflow: "Overflow: input needs wider integers to process", "not-basic": "Illegal input >= 0x80 (not a basic code point)", "invalid-input": "Invalid input" },l = Math.floor,d = String.fromCharCode;function y(t) {throw new RangeError(p[t]);}function g(t, e) {for (var r = t.length, n = []; r--;) {n[r] = e(t[r]);}return n;}function v(t, e) {var r = t.split("@"),n = "";return r.length > 1 && (n = r[0] + "@", t = r[1]), n + g((t = t.replace(f, ".")).split("."), e).join(".");}function m(t) {for (var e, r, n = [], o = 0, i = t.length; o < i;) {(e = t.charCodeAt(o++)) >= 55296 && e <= 56319 && o < i ? 56320 == (64512 & (r = t.charCodeAt(o++))) ? n.push(((1023 & e) << 10) + (1023 & r) + 65536) : (n.push(e), o--) : n.push(e);}return n;}function b(t) {return g(t, function (t) {var e = "";return t > 65535 && (e += d((t -= 65536) >>> 10 & 1023 | 55296), t = 56320 | 1023 & t), e += d(t);}).join("");}function w(t, e) {return t + 22 + 75 * (t < 26) - ((0 != e) << 5);}function A(t, e, r) {var n = 0;for (t = r ? l(t / 700) : t >> 1, t += l(t / e); t > 455; n += 36) {t = l(t / 35);}return l(n + 36 * t / (t + 38));}function k(t) {var e,r,n,o,i,s,a,h,u,f,p,d = [],g = t.length,v = 0,m = 128,w = 72;for ((r = t.lastIndexOf("-")) < 0 && (r = 0), n = 0; n < r; ++n) {t.charCodeAt(n) >= 128 && y("not-basic"), d.push(t.charCodeAt(n));}for (o = r > 0 ? r + 1 : 0; o < g;) {for (i = v, s = 1, a = 36; o >= g && y("invalid-input"), ((h = (p = t.charCodeAt(o++)) - 48 < 10 ? p - 22 : p - 65 < 26 ? p - 65 : p - 97 < 26 ? p - 97 : 36) >= 36 || h > l((c - v) / s)) && y("overflow"), v += h * s, !(h < (u = a <= w ? 1 : a >= w + 26 ? 26 : a - w)); a += 36) {s > l(c / (f = 36 - u)) && y("overflow"), s *= f;}w = A(v - i, e = d.length + 1, 0 == i), l(v / e) > c - m && y("overflow"), m += l(v / e), v %= e, d.splice(v++, 0, m);}return b(d);}function _(t) {var e,r,n,o,i,s,a,h,u,f,p,g,v,b,k,_ = [];for (g = (t = m(t)).length, e = 128, r = 0, i = 72, s = 0; s < g; ++s) {(p = t[s]) < 128 && _.push(d(p));}for (n = o = _.length, o && _.push("-"); n < g;) {for (a = c, s = 0; s < g; ++s) {(p = t[s]) >= e && p < a && (a = p);}for (a - e > l((c - r) / (v = n + 1)) && y("overflow"), r += (a - e) * v, e = a, s = 0; s < g; ++s) {if ((p = t[s]) < e && ++r > c && y("overflow"), p == e) {for (h = r, u = 36; !(h < (f = u <= i ? 1 : u >= i + 26 ? 26 : u - i)); u += 36) {k = h - f, b = 36 - f, _.push(d(w(f + k % b, 0))), h = l(k / b);}_.push(d(w(h, 0))), i = A(r, v, n == o), r = 0, ++n;}}++r, ++e;}return _.join("");}a = { version: "1.4.1", ucs2: { decode: m, encode: b }, decode: k, encode: _, toASCII: function toASCII(t) {return v(t, function (t) {return u.test(t) ? "xn--" + _(t) : t;});}, toUnicode: function toUnicode(t) {return v(t, function (t) {return h.test(t) ? k(t.slice(4).toLowerCase()) : t;});} }, void 0 === (o = function () {return a;}.call(e, r, e, t)) || (t.exports = o);}();}).call(this, r(41)(t), r(9));}, function (t, e) {t.exports = function (t) {return t.webpackPolyfill || (t.deprecate = function () {}, t.paths = [], t.children || (t.children = []), Object.defineProperty(t, "loaded", { enumerable: !0, get: function get() {return t.l;} }), Object.defineProperty(t, "id", { enumerable: !0, get: function get() {return t.i;} }), t.webpackPolyfill = 1), t;};}, function (t, e, r) {"use strict";t.exports = { isString: function isString(t) {return "string" == typeof t;}, isObject: function isObject(t) {return "object" == typeof t && null !== t;}, isNull: function isNull(t) {return null === t;}, isNullOrUndefined: function isNullOrUndefined(t) {return null == t;} };}, function (t, e, r) {"use strict";e.decode = e.parse = r(44), e.encode = e.stringify = r(45);}, function (t, e, r) {"use strict";function n(t, e) {return Object.prototype.hasOwnProperty.call(t, e);}t.exports = function (t, e, r, i) {e = e || "&", r = r || "=";var s = {};if ("string" != typeof t || 0 === t.length) return s;var a = /\+/g;t = t.split(e);var c = 1e3;i && "number" == typeof i.maxKeys && (c = i.maxKeys);var h = t.length;c > 0 && h > c && (h = c);for (var u = 0; u < h; ++u) {var f,p,l,d,y = t[u].replace(a, "%20"),g = y.indexOf(r);g >= 0 ? (f = y.substr(0, g), p = y.substr(g + 1)) : (f = y, p = ""), l = decodeURIComponent(f), d = decodeURIComponent(p), n(s, l) ? o(s[l]) ? s[l].push(d) : s[l] = [s[l], d] : s[l] = d;}return s;};var o = Array.isArray || function (t) {return "[object Array]" === Object.prototype.toString.call(t);};}, function (t, e, r) {"use strict";var n = function n(t) {switch (typeof t) {case "string":return t;case "boolean":return t ? "true" : "false";case "number":return isFinite(t) ? t : "";default:return "";}};t.exports = function (t, e, r, a) {return e = e || "&", r = r || "=", null === t && (t = void 0), "object" == typeof t ? i(s(t), function (s) {var a = encodeURIComponent(n(s)) + r;return o(t[s]) ? i(t[s], function (t) {return a + encodeURIComponent(n(t));}).join(e) : a + encodeURIComponent(n(t[s]));}).join(e) : a ? encodeURIComponent(n(a)) + r + encodeURIComponent(n(t)) : "";};var o = Array.isArray || function (t) {return "[object Array]" === Object.prototype.toString.call(t);};function i(t, e) {if (t.map) return t.map(e);for (var r = [], n = 0; n < t.length; n++) {r.push(e(t[n], n));}return r;}var s = Object.keys || function (t) {var e = [];for (var r in t) {Object.prototype.hasOwnProperty.call(t, r) && e.push(r);}return e;};}, function (t, e, r) {"use strict";var n = function n(t, e) {_classCallCheck(this, n);this.target = e, this.type = t;};var o = /*#__PURE__*/function (_n2) {_inherits(o, _n2);var _super2 = _createSuper(o);function o(t, e) {var _this4;_classCallCheck(this, o);_this4 = _super2.call(this, "message", e), _this4.data = t;return _this4;}return o;}(n);var i = /*#__PURE__*/function (_n3) {_inherits(i, _n3);var _super3 = _createSuper(i);function i(t, e, r) {var _this5;_classCallCheck(this, i);_this5 = _super3.call(this, "close", r), _this5.wasClean = r._closeFrameReceived && r._closeFrameSent, _this5.reason = e, _this5.code = t;return _this5;}return i;}(n);var s = /*#__PURE__*/function (_n4) {_inherits(s, _n4);var _super4 = _createSuper(s);function s(t) {_classCallCheck(this, s);return _super4.call(this, "open", t);}return s;}(n);var a = /*#__PURE__*/function (_n5) {_inherits(a, _n5);var _super5 = _createSuper(a);function a(t, e) {var _this6;_classCallCheck(this, a);_this6 = _super5.call(this, "error", e), _this6.message = t.message, _this6.error = t;return _this6;}return a;}(n);var c = { addEventListener: function addEventListener(t, e) {function r(t) {e.call(this, new o(t, this));}function n(t, r) {e.call(this, new i(t, r, this));}function c(t) {e.call(this, new a(t, this));}function h() {e.call(this, new s(this));}"function" == typeof e && ("message" === t ? (r._listener = e, this.on(t, r)) : "close" === t ? (n._listener = e, this.on(t, n)) : "error" === t ? (c._listener = e, this.on(t, c)) : "open" === t ? (h._listener = e, this.on(t, h)) : this.on(t, e));}, removeEventListener: function removeEventListener(t, e) {var r = this.listeners(t);for (var _n6 = 0; _n6 < r.length; _n6++) {r[_n6] !== e && r[_n6]._listener !== e || this.removeListener(t, r[_n6]);}} };t.exports = c;}, function (t, e, r) {var n = r(0)("wx-ws:sender");t.exports = /*#__PURE__*/function () {"use strict";function _class(t) {_classCallCheck(this, _class);this._socket = t, this._queue = [], this._bufferedBytes = 0, this._deflating = !1;}_createClass(_class, [{ key: "send", value: function send(t, e, r) {n("send msg: ", t, " sender: ", this, this._deflating), this._deflating ? this.enqueue([this.dispatch, t, e, r]) : this.dispatch(t, e, r);} }, { key: "dispatch", value: function dispatch(t, e, r) {n("dispatch msg: ", t, ", sender: ", this), this._deflating = !0, "function" == typeof e && (r = e, e = {}), this._deflating = !1, this._socket.send({ data: t, success: function success(t) {return r && r(null, t);}, fail: function fail(t) {return r && r(t);} }), this.dequeue();} }, { key: "dequeue", value: function dequeue() {for (; !this._deflating && this._queue.length;) {var _t2 = this._queue.shift();this._bufferedBytes -= _t2[1].length, Reflect.apply(_t2[0], this, _t2.slice(1));}} }, { key: "enqueue", value: function enqueue(t) {this._bufferedBytes += t[1].length, this._queue.push(t);} }]);return _class;}();}, function (t, e) {t.exports = function (t, e) {for (var r = [], n = (e = e || 0) || 0; n < t.length; n++) {r[n - e] = t[n];}return r;};}, function (t, e) {function r(t) {t = t || {}, this.ms = t.min || 100, this.max = t.max || 1e4, this.factor = t.factor || 2, this.jitter = t.jitter > 0 && t.jitter <= 1 ? t.jitter : 0, this.attempts = 0;}t.exports = r, r.prototype.duration = function () {var t = this.ms * Math.pow(this.factor, this.attempts++);if (this.jitter) {var e = Math.random(),r = Math.floor(e * this.jitter * t);t = 0 == (1 & Math.floor(10 * e)) ? t - r : t + r;}return 0 | Math.min(t, this.max);}, r.prototype.reset = function () {this.attempts = 0;}, r.prototype.setMin = function (t) {this.ms = t;}, r.prototype.setMax = function (t) {this.max = t;}, r.prototype.setJitter = function (t) {this.jitter = t;};}]);});
 
 /***/ }),
-/* 12 */,
-/* 13 */,
-/* 14 */,
-/* 15 */,
 /* 16 */,
 /* 17 */,
-/* 18 */
-/*!**********************************************!*\
-  !*** F:/uni-app/chatRoom/commons/js/data.js ***!
-  \**********************************************/
+/* 18 */,
+/* 19 */,
+/* 20 */,
+/* 21 */,
+/* 22 */,
+/* 23 */,
+/* 24 */,
+/* 25 */,
+/* 26 */,
+/* 27 */,
+/* 28 */,
+/* 29 */,
+/* 30 */
+/*!***********************************************************!*\
+  !*** D:/test/mobile/chatRoom/chatRoom/commons/js/data.js ***!
+  \***********************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8024,10 +8907,10 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
   } };exports.default = _default;
 
 /***/ }),
-/* 19 */
-/*!***********************************************!*\
-  !*** F:/uni-app/chatRoom/commons/js/myfun.js ***!
-  \***********************************************/
+/* 31 */
+/*!************************************************************!*\
+  !*** D:/test/mobile/chatRoom/chatRoom/commons/js/myfun.js ***!
+  \************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8132,10 +9015,33 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
     }
   },
   //详细时间
+  detailTime: function detailTime(e) {
+    var old = new Date(e);
+    var d = old.getTime();
+    var h = old.getHours();
+    var m = old.getMinutes();
+    var Y = old.getFullYear();
+    var M = old.getMonth() + 1;
+    var D = old.getDate();
+    if (M < 10) {
+      M = '0' + M;
+    }
+    if (D < 10) {
+      D = '0' + D;
+    }
+    if (h < 10) {
+      h = '0' + h;
+    }
+    if (m < 10) {
+      m = '0' + m;
+    }
+    return Y + '-' + M + '-' + D + ' ' + h + ':' + m;
+  },
+  //详细时间
   detailTime1: function detailTime1(e) {
     var old = new Date(e);
     var Y = old.getFullYear();
-    var M = old.getMonth();
+    var M = old.getMonth() + 1;
     var D = old.getDate();
     if (M < 10) {
       M = '0' + M;
@@ -8145,13 +9051,27 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
     }
     return Y + '-' + M + '-' + D;
   },
+  //文件夹使用的时间
+  fileName: function fileName(e) {
+    var old = new Date(e);
+    var Y = old.getFullYear();
+    var M = old.getMonth() + 1;
+    var D = old.getDate();
+    if (M < 10) {
+      M = '0' + M;
+    }
+    if (D < 10) {
+      D = '0' + D;
+    }
+    return Y + M + D;
+  },
   //间隔时间差
   spaceTime: function spaceTime(old, now) {
     old = new Date(old);
     now = new Date(now);
     var told = old.getTime();
     var tnow = now.getTime();
-    if (told > tnow + 1000 * 60 * 5) {
+    if (tnow > told + 1000 * 60 * 5) {
       return now;
     } else {
       return '';
@@ -8171,6 +9091,34 @@ Object.defineProperty(exports, "__esModule", { value: true });exports.default = 
         fn.apply(_this, args);
       }, delay);
     };
+  },
+  // 排序
+  sort: function sort(arr, obj, tip) {
+    if (tip == 0) {
+      // 降序排序
+      for (var i = 1; i < arr.length; i++) {
+        for (var j = i; j > 0; j--) {
+          if (arr[j][obj] > arr[j - 1][obj]) {
+            var s = arr[j];
+            arr[j] = arr[j - 1];
+            arr[j - 1] = s;
+          }
+        }
+      }
+      return arr;
+    } else if (tip == 1) {
+      // 升序排序
+      for (var _i = 1; _i < arr.length; _i++) {
+        for (var _j = _i; _j > 0; _j--) {
+          if (arr[_j][obj] < arr[_j - 1][obj]) {
+            var _s = arr[_j];
+            arr[_j] = arr[_j - 1];
+            arr[_j - 1] = _s;
+          }
+        }
+      }
+      return arr;
+    }
   } };exports.default = _default;
 
 /***/ })

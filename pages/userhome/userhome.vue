@@ -29,7 +29,7 @@
 		</view>
 		<view class="bottom-bar">
 			<view class="bottom-btn btn1" @tap="addFriendBtn" v-if="relation == 2">加为好友</view>
-			<view class="bottom-btn btn1"  v-if="relation == 1">发送消息</view>
+			<view class="bottom-btn btn1"  v-if="relation == 1"  @tap="toChatRoom(id,markname,user.imgurl)">发送消息</view>
 		</view>
 		<!--  -->
 		<view class="add-misg"  :animation = "animationData" :style="{height:addHeight+'px',bottom:-addHeight+'px'}">
@@ -186,12 +186,9 @@
 				if(e == 'female'){
 					this.seximg = '../../static/images/female.png'
 					this.sexBg = 'rgba(255,93,91,1)'
-				}else if(e == 'male'){
-					this.seximg = '../../static/images/male.png'
-					this.sexBg = 'rgba(87,153,255,1)'
 				}else{
 					this.seximg = '../../static/images/male.png'
-					this.sexBg = 'rgba(39,40,50,1)'
+					this.sexBg = 'rgba(87,153,255,1)'
 				}
 			},
 			// 获取用户信息
@@ -324,6 +321,13 @@
 				uni.navigateTo({
 					url:'../userdeatils/userdeatils?id='+this.id
 				})
+			},
+			// 跳转到聊天页面
+			toChatRoom(id,name,imgurl) {
+				console.log(id)
+				uni.navigateTo({
+					url: '../chatroom/chatroom?id=' + this.id + '&name=' + name + '&imgurl=' + imgurl + '&type=' + 0
+				});
 			},
 			// 返回上一页
 			backOne:function(){

@@ -71,7 +71,7 @@
 					url:this.serverUrl + '/index/getfriend',
 					data:{
 						uid:this.uid,
-						state:2,
+						state:1,
 						token:this.token
 					},
 					method:'POST',
