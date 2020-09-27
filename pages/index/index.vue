@@ -7,7 +7,7 @@
 			<view class="top-bar-center"><image src="../../static/images/logo.png" mode="widthFix" class="logo"></image></view>
 			<view class="top-bar-right">
 				<view class="icon"><image src="../../static/images/search.png" mode="widthFix" @tap="toSearch"></image></view>
-				<view class="icon"><image src="../../static/images/add.png" mode="widthFix"></image></view>
+				<view class="icon"><image src="../../static/images/add.png" mode="widthFix" @tap="buildGroup"></image></view>
 			</view>
 		</view>
 		<view class="main">
@@ -325,6 +325,12 @@ export default {
 			uni.navigateTo({
 				url: '../search/search'
 			});
+		},
+		// 跳转到新建群页面
+		buildGroup(){
+			uni.navigateTo({
+				url:'../buildgroup/buildgroup'
+			})
 		},
 		//socket 模块
 		//用户登录socket注册
