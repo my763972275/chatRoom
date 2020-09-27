@@ -15,13 +15,13 @@
 				</view>
 				<!-- 群名字 -->
 				<view class="group-name">
-					<input class="group-name-input" type="text" placeholder="为群取个名字"/>
+					<input v-model="name" class="group-name-input" type="text" placeholder="为群取个名字"/>
 				</view>
 				<view class="title">用户</view>
 			</view>
 			<!-- 选择用户 -->
 			<view class="friends">
-				<view class="user" v-for="(item,index) in user" :key="index">
+				<view class="user" v-for="(item,index) in user" :key="index" @tap="selectFriend(index)">
 					<view class="selected" :class="{isselected:item.selected}">
 						<image src="../../static/images/selected.png" v-if="item.selected" class="selected-img"></image>
 					</view>
@@ -31,7 +31,7 @@
 			</view>
 		</view>
 		<view class="bottom-bar">
-			<view class="bottom-btn btn1">创建群聊</view>
+			<view class="bottom-btn btn1" :class="{noselect:(select && name.length > 0)}">创建({{selectNum}})</view>
 		</view>
 	</view>
 </template>
@@ -44,7 +44,8 @@
 		},
 		data() {
 			return {
-				addHeight:'',
+				selectNum:0,
+				name:'',
 				headimg:'',
 				tempFilePath: '',
 				cropFilePath: '../../static/images/group.png',
@@ -97,7 +98,27 @@
 				]
 			}
 		},
+		onLoad() {
+			this.selectNumber();
+		},
+		computed:{
+			select(){
+				if(this.selectNum>0){
+					return true;
+				}else{
+					return false;
+				}
+			}
+		},
 		methods: {
+			// 获取已经选择个数
+			selectNumber(){
+				for(let i=0;i<this.user.length;i++){
+					if(this.user[i].selected){
+						this.selectNum++;
+					}
+				}
+			},
 			//头像裁剪上传函数
 			upload() {
 				uni.chooseImage({
@@ -121,16 +142,14 @@
 					delta:1
 				})
 			},
-			// 高度获取
-			getHeight(){
-				
-			},
-			// 获取页面高度
-			getElementStyle(){
-				const query = uni.createSelectorQuery().in(this);
-				query.select('.').boundingClientRect(data =>{
-					this.addHeight = data.height - 186;
-				}).exec();
+			// 动态选择好友
+			selectFriend(e){
+				this.user[e].selected = !this.user[e].selected;
+				if(this.user[e].selected){
+					this.selectNum++
+				}else{
+					this.selectNum--;
+				}
 			}
 		}
 	}
@@ -243,8 +262,12 @@
 		background:rgba(250,250,250,0.9);
 		box-shadow: 0px 1px 0px 0px rgba(0,0,0,0.25);
 		.bottom-btn{
-			background:$uni-color-primary;
+			background:$uni-bg-color-grey;
 			margin:0 $uni-spacing-col-base;
+		}
+		.noselect{
+			background:$uni-color-primary;
+			
 		}
 	}
 	
